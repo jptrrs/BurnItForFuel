@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Patch>
+  
+<!--Preparing All Refuelables-->
+  <Operation Class="PatchOperationSequence">
+    <success>Normal</success>
+    <operations>
+      <li Class="PatchOperationAdd">
+        <xpath>/Defs/ThingDef[not(inspectorTabs)]/comps/li[@Class = "CompProperties_Refuelable"]/../..</xpath>
+        <value>
+          <inspectorTabs/>
+        </value>
+      </li>
+      <li Class="PatchOperationAdd">
+        <xpath>/Defs/ThingDef[not(building)]/comps/li[@Class = "CompProperties_Refuelable"]/../..</xpath>
+        <value>
+          <building/>
+        </value>
+      </li>
+    </operations>
+  </Operation>
+  
+  <Operation Class="PatchOperationSequence">
+    <success>Normal</success>
+    <operations>
+
+      <!--Extending Refuelable Components-->      
+      <li Class="PatchOperationInsert">
+        <xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]</xpath>
+        <value>
+          <li Class="BurnItForFuel.CompProperties_SelectFuel"/>
+        </value>
+      </li>
+      <li Class="PatchOperationAdd">
+        <xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]</xpath>
+        <value>
+          <atomicFueling>true</atomicFueling>
+        </value>
+      </li>
+      <li Class="PatchOperationAdd">
+        <xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]/../../inspectorTabs</xpath>
+        <value>
+          <li>BurnItForFuel.ITab_Fuel</li>
+        </value>
+      </li>
+
+      <!-- Fuel Settings-->
+      <li Class="PatchOperationAdd">
+        <xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]/../../building</xpath>
+        <value>
+          <fixedStorageSettings>
+            <filter>
+              <categories>
+                <li>Textiles</li>
+                <li>PlantMatter</li>
+              </categories>
+              <thingDefs >
+                <li>WoodLog</li>
+                <li>Chemfuel</li>
+              </thingDefs>
+            </filter>
+          </fixedStorageSettings>
+          <defaultStorageSettings>
+            <filter>
+              <categories/>
+              <thingDefs>
+                <li>WoodLog</li>
+              </thingDefs>
+            </filter>
+          </defaultStorageSettings>
+        </value>
+      </li>
+         
+    </operations>
+  </Operation>
+ </Patch>
+

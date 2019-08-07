@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Patch>
+<!--  
+How to make your own fuel settings in 7 easy steps:
+
+1. Duplicate this file and rename it,
+
+2. delete the lines between here...-->
+  <Operation Class="PatchOperationFindMod">
+    <mods>
+      <li>Expanded Woodworking</li>
+    </mods>
+    <match Class="PatchOperationSequence">
+<!--...and here.
+
+3. Uncomment the following line: -->
+<!--<Operation Class="PatchOperationSequence">-->  
+      <success>Normal</success>
+      <operations>
+        <li Class="PatchOperationAdd">
+
+<!--4. Make your changes below:-->          
+          
+          <xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]/../../building/fixedStorageSettings/filter/categories</xpath> <!-- replace "categories" with "thingDefs" to specify individual defs-->
+          <value>
+            
+            <!--Stuff you're allowed to burn-->
+            <li>WoodTypes</li>
+            <li>WoodLumber</li>
+            
+          </value>
+        </li>
+        <li Class="PatchOperationAdd">
+          <xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]/../../building/defaultStorageSettings/filter/categories</xpath> <!--replace "categories" with "thingDefs" to specify individual defs-->
+          <value>
+
+            <!--Stuff selected as fuel by default-->
+            <li>WoodTypes</li>
+          
+          </value>
+        </li>
+
+<!--5. Delete the lines between here...-->        
+        <li Class="PatchOperationRemove">
+          <xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]/../../building/defaultStorageSettings/filter/thingDefs/li[.="WoodLog"]</xpath>
+        </li>
+<!--...and here.-->        
+      
+      </operations>
+
+<!--6. Delete the following line:-->  
+    </match> 
+
+  </Operation>
+</Patch>
+<!--7. Save and reload the game-->
+

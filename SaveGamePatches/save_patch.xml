@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<Patch>
+
+  <Operation Class="PatchOperationAttributeSet">
+    <xpath>//thing[def = "Bed" or def = "DoubleBed" or def = "HospitalBed" or def = "RoyalBed" or def = "Bedroll" or def = "BedrollDouble"]</xpath>
+    <attribute>Class</attribute>
+    <value>SoftWarmBeds.Building_SoftWarmBed</value>
+  </Operation>
+  
+  <Operation Class="PatchOperationAttributeSet">
+    <xpath>//thing[def = "BedGuest" or def = "DoubleBedGuest" or def = "HospitalBedGuest" or def = "RoyalBedGuest"]</xpath>
+    <attribute>Class</attribute>
+    <value>SoftWarmBeds.Building_SoftWarmGuestBed</value>
+  </Operation>
+  
+</Patch>
