@@ -62,17 +62,14 @@
       <Link>About.xml</Link>
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="..\..\Patches\Patches.xml">
+    <Content Include="..\Patches\Patches.xml">
       <Link>Patches.xml</Link>
-      <SubType>Designer</SubType>
     </Content>
-    <Content Include="..\..\Patches\Patches_ExpandedWoodworking.xml">
+    <Content Include="..\Patches\Patches_ExpandedWoodworking.xml">
       <Link>Patches_ExpandedWoodworking.xml</Link>
-      <SubType>Designer</SubType>
     </Content>
-    <Content Include="..\..\Patches\Patches_VariousCoalMods.xml">
+    <Content Include="..\Patches\Patches_VariousCoalMods.xml">
       <Link>Patches_VariousCoalMods.xml</Link>
-      <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

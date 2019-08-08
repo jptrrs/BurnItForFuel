@@ -60,14 +60,14 @@
               </thingDefs>
             </filter>
           </fixedStorageSettings>
-          <defaultStorageSettings>
+          <!--<defaultStorageSettings>
             <filter>
               <categories/>
               <thingDefs>
                 <li>WoodLog</li>
               </thingDefs>
             </filter>
-          </defaultStorageSettings>
+          </defaultStorageSettings>-->
         </value>
       </li>
          
