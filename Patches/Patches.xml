@@ -1,44 +1,44 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Patch>
-  
-<!--Preparing All Refuelables-->
+
+  <!--Preparing All Refuelables-->
   <Operation Class="PatchOperationSequence">
     <success>Normal</success>
     <operations>
       <li Class="PatchOperationAdd">
         <xpath>/Defs/ThingDef[not(inspectorTabs)]/comps/li[@Class = "CompProperties_Refuelable"]/../..</xpath>
         <value>
-          <inspectorTabs/>
+          <inspectorTabs />
         </value>
       </li>
       <li Class="PatchOperationAdd">
         <xpath>/Defs/ThingDef[not(building)]/comps/li[@Class = "CompProperties_Refuelable"]/../..</xpath>
         <value>
-          <building/>
+          <building />
         </value>
       </li>
     </operations>
   </Operation>
-  
+
   <Operation Class="PatchOperationSequence">
     <success>Normal</success>
     <operations>
 
-      <!--Extending Refuelable Components-->      
+      <!--Extending Refuelable Components-->
       <li Class="PatchOperationInsert">
         <xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]</xpath>
         <value>
-          <li Class="BurnItForFuel.CompProperties_SelectFuel"/>
+          <li Class="BurnItForFuel.CompProperties_SelectFuel" />
         </value>
       </li>
       <li Class="PatchOperationAdd">
-        <xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]</xpath>
+        <xpath>/Defs/ThingDef[not(defName="PodLauncher")]/comps/li[@Class = "CompProperties_Refuelable"]</xpath>
         <value>
           <atomicFueling>true</atomicFueling>
         </value>
       </li>
       <li Class="PatchOperationAdd">
-        <xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]/../../inspectorTabs</xpath>
+        <xpath>/Defs/ThingDef[not(defName="PodLauncher")]/comps/li[@Class = "CompProperties_Refuelable"]/../../inspectorTabs</xpath>
         <value>
           <li>BurnItForFuel.ITab_Fuel</li>
         </value>
@@ -54,7 +54,7 @@
                 <li>Textiles</li>
                 <li>PlantMatter</li>
               </categories>
-              <thingDefs >
+              <thingDefs>
                 <li>WoodLog</li>
                 <li>Chemfuel</li>
               </thingDefs>
@@ -62,7 +62,7 @@
           </fixedStorageSettings>
           <!--<defaultStorageSettings>
             <filter>
-              <categories/>
+              <categories />
               <thingDefs>
                 <li>WoodLog</li>
               </thingDefs>
@@ -70,8 +70,6 @@
           </defaultStorageSettings>-->
         </value>
       </li>
-         
     </operations>
   </Operation>
- </Patch>
-
+</Patch>

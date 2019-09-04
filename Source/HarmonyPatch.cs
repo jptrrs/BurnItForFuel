@@ -15,24 +15,19 @@ namespace BurnItForFuel
 
         static HarmonyPatches()
         {
-            
             HarmonyInstance harmonyInstance = HarmonyInstance.Create("JPT_BurnItForFuel");
 
-            harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "CanRefuel"), 
-                prefix: new HarmonyMethod(type: patchType, name: nameof(Inhibitor)), postfix: new HarmonyMethod(type: patchType, name: nameof(CanRefuel_Postfix)), transpiler: null);
+            harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "CanRefuel"),
+                prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(CanRefuel_Postfix)), transpiler: null);
 
             harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "FindBestFuel"),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(Inhibitor)), postfix: new HarmonyMethod(type: patchType, name: nameof(FindBestFuel_Postfix)), transpiler: null);
+                prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(FindBestFuel_Postfix)), transpiler: null);
 
             harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "FindAllFuel"),
-                prefix: new HarmonyMethod(type: patchType, name: nameof(Inhibitor)), postfix: new HarmonyMethod(type: patchType, name: nameof(FindAllFuel_Postfix)), transpiler: null);
+                prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(FindAllFuel_Postfix)), transpiler: null);
 
-        }
-
-        public static bool Inhibitor(MethodInfo __originalMethod)
-        {
-            //Log.Message("Preventing vanilla " + __originalMethod);
-            return true;
+            harmonyInstance.Patch(original: AccessTools.Method(type: typeof(CompRefuelable), name: "Initialize"),
+                prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Initialize_Postfix)), transpiler: null);
         }
 
         public static void CanRefuel_Postfix(object __instance, Pawn pawn, Thing t, bool forced, ref bool __result)
@@ -71,7 +66,6 @@ namespace BurnItForFuel
                     }
                     if (t.TryGetComp<CompRefuelable>().Props.atomicFueling && FindAllFuel(pawn, t) == null)
                     {
-
                         JobFailReason.Is("NoFuelToRefuel".Translate(fuelFilter.Summary), null);
                         return false;
                     }
@@ -112,7 +106,7 @@ namespace BurnItForFuel
             filter = refuelable.TryGetComp<CompSelectFuel>().fuelSettings.filter;
             Predicate<Thing> validator = (Thing x) => !x.IsForbidden(pawn) && pawn.CanReserve(x, 1, -1, null, false) && filter.Allows(x);
             IntVec3 position = refuelable.Position;
-            Region region = position.GetRegion(pawn.Map, RegionType.Set_Passable);
+            Region region = position.GetRegion(pawn.Map, RegionType.Set_Passable); // NOTE: comes out null if refuelable is inside a wall, even with matching RegionType. Why?
             TraverseParms traverseParams = TraverseParms.For(pawn, Danger.Deadly, TraverseMode.ByPawn, false);
             RegionEntryPredicate entryCondition = (Region from, Region r) => r.Allows(traverseParams, false);
             List<Thing> chosenThings = new List<Thing>();
@@ -149,7 +143,13 @@ namespace BurnItForFuel
             return null;
         }
 
+        public static void Initialize_Postfix(CompRefuelable __instance)
+        {
+            if (__instance.parent.def.building.canPlaceOverWall)
+            {
+                __instance.Props.atomicFueling = false;
+                Log.Message("[BurnItForFuel] Switching " + __instance.parent.Label + " back to a simpler refuel mode, since its built inside a wall. It won't be possible to refuel it with mixed fuels.", false);
+            }
+        }
     }
 }
-
-
