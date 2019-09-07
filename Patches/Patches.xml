@@ -27,18 +27,13 @@
       <!--Extending Refuelable Components-->
       <li Class="PatchOperationInsert">
         <xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]</xpath>
+        <order>Append</order>
         <value>
           <li Class="BurnItForFuel.CompProperties_SelectFuel" />
         </value>
       </li>
       <li Class="PatchOperationAdd">
-        <xpath>/Defs/ThingDef[not(defName="PodLauncher")]/comps/li[@Class = "CompProperties_Refuelable"]</xpath>
-        <value>
-          <atomicFueling>true</atomicFueling>
-        </value>
-      </li>
-      <li Class="PatchOperationAdd">
-        <xpath>/Defs/ThingDef[not(defName="PodLauncher")]/comps/li[@Class = "CompProperties_Refuelable"]/../../inspectorTabs</xpath>
+        <xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]/../../inspectorTabs</xpath>
         <value>
           <li>BurnItForFuel.ITab_Fuel</li>
         </value>
@@ -60,14 +55,6 @@
               </thingDefs>
             </filter>
           </fixedStorageSettings>
-          <!--<defaultStorageSettings>
-            <filter>
-              <categories />
-              <thingDefs>
-                <li>WoodLog</li>
-              </thingDefs>
-            </filter>
-          </defaultStorageSettings>-->
         </value>
       </li>
     </operations>

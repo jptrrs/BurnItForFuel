@@ -25,9 +25,6 @@ namespace BurnItForFuel
 
             harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "FindAllFuel"),
                 prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(FindAllFuel_Postfix)), transpiler: null);
-
-            harmonyInstance.Patch(original: AccessTools.Method(type: typeof(CompRefuelable), name: "Initialize"),
-                prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(Initialize_Postfix)), transpiler: null);
         }
 
         public static void CanRefuel_Postfix(object __instance, Pawn pawn, Thing t, bool forced, ref bool __result)
@@ -141,15 +138,6 @@ namespace BurnItForFuel
                 return chosenThings;
             }
             return null;
-        }
-
-        public static void Initialize_Postfix(CompRefuelable __instance)
-        {
-            if (__instance.parent.def.building.canPlaceOverWall)
-            {
-                __instance.Props.atomicFueling = false;
-                Log.Message("[BurnItForFuel] Switching " + __instance.parent.Label + " back to a simpler refuel mode, since its built inside a wall. It won't be possible to refuel it with mixed fuels.", false);
-            }
         }
     }
 }

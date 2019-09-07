@@ -71,6 +71,9 @@
     <Content Include="..\Patches\Patches_VariousCoalMods.xml">
       <Link>Patches_VariousCoalMods.xml</Link>
     </Content>
+    <Content Include="..\Patches\Patches_VegetableGarden.xml">
+      <Link>Patches_VegetableGarden.xml</Link>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

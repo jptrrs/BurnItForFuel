@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Patch>
-	<Operation Class="PatchOperationFindMod">
+  <!--<Operation Class="PatchOperationFindMod">
 		<mods>
 			<li>SRTS Expanded</li>
 			<li>SRTS</li>
@@ -19,8 +19,6 @@
 					</li>
 				</operations>
 			</match>
-		</match> 
-	</Operation>
+		</match>
+	</Operation>-->
 </Patch>
-
-

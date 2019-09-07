@@ -1,8 +1,7 @@
-﻿using System;
-using System.Text;
+﻿using RimWorld;
 using System.Collections.Generic;
+using System.Linq;
 using Verse;
-using RimWorld;
 
 namespace BurnItForFuel
 {
@@ -35,7 +34,7 @@ namespace BurnItForFuel
             return null;
         }
 
-        private bool StorageSettingsIncludeBaseFuel()
+        public bool StorageSettingsIncludeBaseFuel() //e.g: Dubs Hygiene Burning Pit doesn't.
         {
             bool flag = false;
             foreach (ThingDef thingDef in BaseFuelSettings(parent).AllowedThingDefs)
@@ -54,27 +53,50 @@ namespace BurnItForFuel
             fuelSettings = new StorageSettings(this);
             if (BaseFuelSettings(parent) != null)
             {
-                if (StorageSettingsIncludeBaseFuel())
+                if ((!StorageSettingsIncludeBaseFuel() || IsVehicle()) && !parent.def.GetCompProperties<CompProperties_Refuelable>().atomicFueling)
                 {
-                    foreach (ThingDef thingDef in BaseFuelSettings(parent).AllowedThingDefs)
-                    {
-                        fuelSettings.filter.SetAllow(thingDef, true);
-                    }
-                }
-                else
-                {
-                    Log.Message("[BurnItForFuel] The storage settings defined for the " + parent.Label + " do not include the base fuel, which would prevent proper refuelling. Overriding.");
+                    if (!StorageSettingsIncludeBaseFuel()) Log.Message("[BurnItForFuel] " + BaseFuelSettings(parent).ToString() + " was missing from the " + parent.Label + " storage settings, so those were overriden. Add <atomicFueling>true</atomicFueling> to its CompProperties_Refuelable to prevent this.");
+                    if (IsVehicle()) Log.Message("[BurnItForFuel] " + parent.LabelCap + " looks like its a vehicle, so we're preventing fuel mixing to protect your engines. Add <atomicFueling>true</atomicFueling> to its CompProperties_Refuelable to prevent this.");
                     GetParentStoreSettings().filter.SetAllowAll(BaseFuelSettings(parent));
-                    fuelSettings.filter.SetAllowAll(BaseFuelSettings(parent));
+                }
+                foreach (ThingDef thingDef in BaseFuelSettings(parent).AllowedThingDefs)
+                {
+                    fuelSettings.filter.SetAllow(thingDef, true);
                 }
             }
+            if (SafeToMixFuels())
+            {
+                if (parent.TryGetComp<CompRefuelable>() != null)
+                {
+                    parent.TryGetComp<CompRefuelable>().Props.atomicFueling = true;
+                }
+            }
+        }
+
+        private bool MultipleFuelSet()
+        {
+            ICollection<ThingDef> filter = GetParentStoreSettings().filter.AllowedThingDefs as ICollection<ThingDef>;
+            return filter.Count() > 1;
+        }
+
+        private bool SafeToMixFuels()
+        {
+            bool flag = false;
+            if (MultipleFuelSet() && parent.def.passability != Traversability.Impassable && !parent.def.building.canPlaceOverWall && !IsVehicle()) flag = true;
+            return flag;
+        }
+
+        private bool IsVehicle()
+        {
+            CompProperties_Refuelable props = parent.TryGetComp<CompRefuelable>().Props;
+            return props.targetFuelLevelConfigurable && props.consumeFuelOnlyWhenUsed;
         }
 
         public bool StorageTabVisible
         {
             get
             {
-                return true;
+                return MultipleFuelSet();
             }
         }
 
