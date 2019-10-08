@@ -55,8 +55,8 @@ namespace BurnItForFuel
             {
                 if ((!StorageSettingsIncludeBaseFuel() || IsVehicle()) && !parent.def.GetCompProperties<CompProperties_Refuelable>().atomicFueling)
                 {
-                    if (!StorageSettingsIncludeBaseFuel()) Log.Message("[BurnItForFuel] " + BaseFuelSettings(parent).ToString() + " was missing from the " + parent.Label + " storage settings, so those were overriden. Add <atomicFueling>true</atomicFueling> to its CompProperties_Refuelable to prevent this.");
-                    if (IsVehicle()) Log.Message("[BurnItForFuel] " + parent.LabelCap + " looks like its a vehicle, so we're preventing fuel mixing to protect your engines. Add <atomicFueling>true</atomicFueling> to its CompProperties_Refuelable to prevent this.");
+                    if (!StorageSettingsIncludeBaseFuel()) Log.Message("[BurnItForFuel] " + BaseFuelSettings(parent).ToString() + " was missing from the " + parent + " storage settings, so those were overriden. Add <atomicFueling>true</atomicFueling> to its CompProperties_Refuelable to prevent this.");
+                    if (IsVehicle()) Log.Message("[BurnItForFuel] " + parent + " looks like its a vehicle, so we're preventing fuel mixing to protect your engines. Add <atomicFueling>true</atomicFueling> to its CompProperties_Refuelable to prevent this.");
                     GetParentStoreSettings().filter.SetAllowAll(BaseFuelSettings(parent));
                 }
                 foreach (ThingDef thingDef in BaseFuelSettings(parent).AllowedThingDefs)

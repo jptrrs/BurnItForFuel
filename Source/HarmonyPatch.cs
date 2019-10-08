@@ -29,7 +29,10 @@ namespace BurnItForFuel
 
         public static void CanRefuel_Postfix(object __instance, Pawn pawn, Thing t, bool forced, ref bool __result)
         {
-            __result = CanRefuel(pawn, t, forced);
+            if (t.TryGetComp<CompSelectFuel>() != null)
+            {
+                __result = CanRefuel(pawn, t, forced);
+            }
         }
 
         public static bool CanRefuel(Pawn pawn, Thing t, bool forced = false)
@@ -74,7 +77,10 @@ namespace BurnItForFuel
 
         public static void FindBestFuel_Postfix(Pawn pawn, Thing refuelable, ref Thing __result)
         {
-            __result = FindBestFuel(pawn, refuelable);
+            if (refuelable.TryGetComp<CompSelectFuel>() != null)
+            {
+                __result = FindBestFuel(pawn, refuelable);
+            }
         }
 
         private static Thing FindBestFuel(Pawn pawn, Thing refuelable)
@@ -93,7 +99,10 @@ namespace BurnItForFuel
 
         public static void FindAllFuel_Postfix(Pawn pawn, Thing refuelable, ref List<Thing> __result, MethodInfo __originalMethod)
         {
-            __result = FindAllFuel(pawn, refuelable);
+            if (refuelable.TryGetComp<CompSelectFuel>() != null)
+            {
+                __result = FindAllFuel(pawn, refuelable);
+            }
         }
 
         private static List<Thing> FindAllFuel(Pawn pawn, Thing refuelable)
