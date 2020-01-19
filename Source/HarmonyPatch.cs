@@ -3,6 +3,7 @@ using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using UnityEngine;
 using Verse;
 using Verse.AI;
 
@@ -25,6 +26,10 @@ namespace BurnItForFuel
 
             harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "FindAllFuel"),
                 prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(FindAllFuel_Postfix)), transpiler: null);
+
+            harmonyInstance.Patch(original: AccessTools.Method(type: typeof(CompRefuelable), name: "GetFuelCountToFullyRefuel"),
+                prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(GetFuelCountToFullyRefuel_Postfix)), transpiler: null);
+
         }
 
         public static void CanRefuel_Postfix(object __instance, Pawn pawn, Thing t, bool forced, ref bool __result)
@@ -85,6 +90,7 @@ namespace BurnItForFuel
 
         private static Thing FindBestFuel(Pawn pawn, Thing refuelable)
         {
+            //Log.Message("FindBestFuel_Postfix for: "+refuelable);
             ThingFilter filter = new ThingFilter();
             filter = refuelable.TryGetComp<CompSelectFuel>().fuelSettings.filter;
             Predicate<Thing> predicate = (Thing x) => !x.IsForbidden(pawn) && pawn.CanReserve(x, 1, -1, null, false) && filter.Allows(x);
@@ -107,7 +113,8 @@ namespace BurnItForFuel
 
         private static List<Thing> FindAllFuel(Pawn pawn, Thing refuelable)
         {
-            int quantity = refuelable.TryGetComp<CompRefuelable>().GetFuelCountToFullyRefuel();
+            CompRefuelable comp = refuelable.TryGetComp<CompRefuelable>();
+            int quantity = GetFuelCountToFullyRefuel(comp);
             ThingFilter filter = new ThingFilter();
             filter = refuelable.TryGetComp<CompSelectFuel>().fuelSettings.filter;
             Predicate<Thing> validator = (Thing x) => !x.IsForbidden(pawn) && pawn.CanReserve(x, 1, -1, null, false) && filter.Allows(x);
@@ -147,6 +154,17 @@ namespace BurnItForFuel
                 return chosenThings;
             }
             return null;
+        }
+
+        public static void GetFuelCountToFullyRefuel_Postfix(CompRefuelable __instance, ref int __result)
+        {
+            __result = GetFuelCountToFullyRefuel(__instance);
+        }
+
+        public static int GetFuelCountToFullyRefuel(CompRefuelable __instance)
+        {
+            float f = (__instance.TargetFuelLevel - __instance.Fuel) / __instance.Props.FuelMultiplierCurrentDifficulty;
+            return Mathf.Max(Mathf.CeilToInt(f), 1);
         }
     }
 }
