@@ -1,6 +1,6 @@
 ![Preview](https://raw.githubusercontent.com/jptrrs/BurnItForFuel/master/About/preview.png)
 
-# BurnItForFuel
+[JPT] Burn It for Fuel!
 
 If you can burn wood for heat, why not use chemfuel as well? Or even cloth or other plants? This mod will enable you to select what type of fuel will be consumed by torches, campfires, stoves, smithies or any other fueled buildings - vanilla or modded - even passive coolers! <b>This is done on the mod's option panel</b>, and anything goes! By default, the list includes wood, chemfuel, textiles, plant matter and, if the appropriate mods are present, also lumber, other wood types, coal and charcoal.
 
