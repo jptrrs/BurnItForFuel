@@ -11,8 +11,6 @@ I've made this out of frustration using <a href="https://steamcommunity.com/shar
 [h1]Compatibility</h1>
 <b>Burn It for Fuel</b> was written to be as broadly compatible as possible, detecting any refuelable buldings other mods might add and trying to extend their fuel settings. If for any reason this causes any trouble, please let me know and I'll try to work it out. 
 
-What we cannot automatically predict is what resources should be considered fuel. Individual resources added by other mods that aren't textiles or plant matter require some patching. Those on the list below have already been patched for. <i>If you miss something from a mod you use, <a href="https://steamcommunity.com/workshop/filedetails/discussion/1823276856/1643170269583633981/">please consider making make your own patch</a>, it's really easy!</i>
-
 <b>Built-in fuel compatibility:</b>
 <ul>
 <li><a href="https://steamcommunity.com/sharedfiles/filedetails/?id=1541903513">Atlas' Materials</a>
