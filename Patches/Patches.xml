@@ -39,7 +39,7 @@
         </value>
       </li>
 
-      <!-- Fuel Settings-->
+      <!-- Fuel Settings
       <li Class="PatchOperationAdd">
         <xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]/../../building</xpath>
         <value>
@@ -56,7 +56,7 @@
             </filter>
           </fixedStorageSettings>
         </value>
-      </li>
+      </li>-->
     </operations>
   </Operation>
 </Patch>

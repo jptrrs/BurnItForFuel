@@ -5,7 +5,7 @@
       <li>VGP Vegetable Garden</li>
     </mods>
     <match Class="PatchOperationAdd">
-      <xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]/../../building/fixedStorageSettings/filter/thingDefs</xpath>
+      <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
       <value>
         <li>Bamboo</li>
         <li>VG_IronWoodLog</li>

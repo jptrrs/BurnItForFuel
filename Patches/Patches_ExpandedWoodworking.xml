@@ -5,7 +5,7 @@
       <li>Expanded Woodworking</li>
     </mods>
     <match Class="PatchOperationAdd">
-      <xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]/../../building/fixedStorageSettings/filter/categories</xpath>
+      <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/categories</xpath>
       <value>
         <li>WoodTypes</li>
         <li>WoodLumber</li>

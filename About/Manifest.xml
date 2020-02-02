@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Manifest>
+  <identifier>BurnItForFuel</identifier>
+  <version>2.0</version>
+  <dependencies>
+    <li>HugsLib</li>
+  </dependencies>
+  <loadAfter>
+    <li>MendAndRecycle</li>
+    <li>Mending Medieval</li>
+  </loadAfter>
+  <suggests>
+    <li>ExpandedWoodworking</li>
+  </suggests>
+  <showCrossPromotions>true</showCrossPromotions>
+  <downloadUri>https://github.com/jptrrs/BurnItForFuel/releases/latest</downloadUri>
+</Manifest>

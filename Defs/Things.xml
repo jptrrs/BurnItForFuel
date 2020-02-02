@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <ThingDef>
+    <label>BurnItForFuel</label>
+    <defName>BurnItForFuel</defName>
+    <thingClass>Building</thingClass>
+    <building>
+      <fixedStorageSettings>
+        <filter>
+          <categories>
+            <li>Textiles</li>
+            <li>PlantMatter</li>
+          </categories>
+          <thingDefs>
+            <li>WoodLog</li>
+            <li>Chemfuel</li>
+          </thingDefs>
+        </filter>
+      </fixedStorageSettings>
+    </building>
+  </ThingDef>
+
+</Defs>

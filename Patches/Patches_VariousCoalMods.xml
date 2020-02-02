@@ -6,8 +6,8 @@
 			<li>Coal</li>
 		</mods>
 		<match Class="PatchOperationAdd">
-			<xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]/../../building/fixedStorageSettings/filter/thingDefs</xpath>
-			<value>
+			<xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
+      <value>
 				<li>Coal</li>
 				<li>Charcoal</li>
 			</value>
@@ -19,8 +19,8 @@
 			<li>Rimhammer - The End Times</li>
 		</mods>
 		<match Class="PatchOperationAdd">
-			<xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]/../../building/fixedStorageSettings/filter/thingDefs</xpath>
-			<value>
+      <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
+      <value>
 				<li>RH_TET_Coal</li>
 			</value>
 		</match>
@@ -31,8 +31,8 @@
 			<li>[WD] Simple Coal 1.0</li>
 		</mods>
 		<match Class="PatchOperationAdd">
-			<xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]/../../building/fixedStorageSettings/filter/thingDefs</xpath>
-			<value>
+      <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
+      <value>
 				<li>WDCoal</li>
 			</value>
 		</match>
@@ -43,8 +43,8 @@
 			<li>Medieval Times</li>
 		</mods>
 		<match Class="PatchOperationAdd">
-			<xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]/../../building/fixedStorageSettings/filter/thingDefs</xpath>
-			<value>
+      <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
+      <value>
 				<li>MedTimes_Resource_Coal</li>
 			</value>
 		</match>
@@ -55,8 +55,8 @@
 			<li>Survivalist's Additions</li>
 		</mods>
 		<match Class="PatchOperationAdd">
-			<xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]/../../building/fixedStorageSettings/filter/thingDefs</xpath>
-			<value>
+			<xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
+      <value>
 				<li>SRV_Charcoal</li>
 			</value>
 		</match>
@@ -67,8 +67,8 @@
 			<li>[1.0] Atlas' Materials</li>
 		</mods>
 		<match Class="PatchOperationAdd">
-			<xpath>/Defs/ThingDef/comps/li[@Class = "CompProperties_Refuelable"]/../../building/fixedStorageSettings/filter/thingDefs</xpath>
-			<value>
+      <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
+      <value>
 				<li>AM_Coal</li>
 				<li>AM_CokeCoal</li>
 				<li>AM_MixedPlastic</li>
