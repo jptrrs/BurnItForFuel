@@ -1,4 +1,4 @@
-![Preview](https://github.com/jptrrs/BurnItForFuel/blob/master/About/Preview.png)
+![Preview](https://raw.githubusercontent.com/jptrrs/BurnItForFuel/master/About/preview.png)
 
 # BurnItForFuel
 
