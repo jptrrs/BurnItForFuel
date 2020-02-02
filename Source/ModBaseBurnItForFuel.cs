@@ -47,10 +47,6 @@ namespace BurnItForFuel
                 filter.CopyAllowancesFrom(ThingDef.Named("BurnItForFuel").building.fixedStorageSettings.filter);
                 return filter;
             }
-            set
-            {
-
-            }
         }
 
         private static Vector2 scrollPosition;
@@ -73,7 +69,29 @@ namespace BurnItForFuel
                 HasEverBeenSet.Value = true;
             }
             fuels.CustomDrawerHeight = 320f;
-            fuels.CustomDrawer = rect => SettingsUI.CustomDrawer_ThingFilter(rect, ref scrollPosition, ref fuels.Value.masterFuelSettings, PossibleFuels);
+            fuels.CustomDrawer = rect => SettingsUI.CustomDrawer_ThingFilter(rect, ref scrollPosition, ref fuels.Value.masterFuelSettings, PossibleFuels, DefaultFuels);
+        }
+
+        public override void SettingsChanged()
+        {
+            base.SettingsChanged();
+            if (Current.ProgramState == ProgramState.Playing)
+            {
+                Find.Maps.ForEach(delegate(Map map) 
+                {
+                    List<Thing> affected = map.listerThings.ThingsMatching(ThingRequest.ForGroup(ThingRequestGroup.Refuelable));
+                    foreach (Thing t in affected)
+                    {
+                        Building b = t as Building;
+                        CompSelectFuel comp = b.GetComp<CompSelectFuel>();
+                        if (comp != null)
+                        {
+                            comp.ValidateFuelSettings();
+                        }
+                    }
+                });
+
+            }
         }
 
         public class FuelSettingsHandle : SettingHandleConvertible
@@ -82,7 +100,7 @@ namespace BurnItForFuel
 
             public override void FromString(string settingValue)
             {
-                List<ThingDef> defList = settingValue.Replace(", ", ",").Split(',').ToList().ConvertAll(e => DefDatabase<ThingDef>.GetNamed(e));
+                List<ThingDef> defList = settingValue.Replace(", ", ",").Split(',').ToList().ConvertAll(e => DefDatabase<ThingDef>.GetNamedSilentFail(e));
                 foreach (ThingDef def in defList)
                 { 
                     if(def != null) masterFuelSettings.SetAllow(def, true); 

@@ -85,6 +85,21 @@ namespace BurnItForFuel
             {
                 SetUpStorageSettings();
             }
+            else if (Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                ValidateFuelSettings();
+            }
+        }
+
+        public void ValidateFuelSettings()
+        {
+            foreach (ThingDef def in (from d in fuelSettings.filter.AllowedThingDefs
+                                      where !GetParentStoreSettings().filter.Allows(d)
+                                      select d).ToList())
+            {
+                fuelSettings.filter.SetAllow(def, false);
+                Log.Message("[BurnItForFuel] " + def.defName + " is no longer fuel, so it was removed from the " + parent + " fuel settings.");
+            }
         }
 
         public void SetUpStorageSettings()
