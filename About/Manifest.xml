@@ -7,7 +7,7 @@
   </dependencies>
   <loadAfter>
     <li>MendAndRecycle</li>
-    <li>Mending Medieval</li>
+    <li>MendingMedieval</li>
   </loadAfter>
   <suggests>
     <li>ExpandedWoodworking</li>
