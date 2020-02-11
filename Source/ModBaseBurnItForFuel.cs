@@ -83,10 +83,13 @@ namespace BurnItForFuel
                     foreach (Thing t in affected)
                     {
                         Building b = t as Building;
-                        CompSelectFuel comp = b.GetComp<CompSelectFuel>();
-                        if (comp != null)
+                        if (b != null)
                         {
-                            comp.ValidateFuelSettings();
+                            CompSelectFuel comp = b.GetComp<CompSelectFuel>();
+                            if (comp != null)
+                            {
+                                comp.ValidateFuelSettings();
+                            }
                         }
                     }
                 });
