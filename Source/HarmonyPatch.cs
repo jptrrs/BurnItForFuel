@@ -1,4 +1,4 @@
-﻿using Harmony;
+﻿using HarmonyLib;
 using RimWorld;
 using System;
 using System.Collections.Generic;
@@ -16,19 +16,19 @@ namespace BurnItForFuel
 
         static HarmonyPatches()
         {
-            HarmonyInstance harmonyInstance = HarmonyInstance.Create("JPT_BurnItForFuel");
+            var harmonyInstance = new Harmony("JPT_BurnItForFuel");
 
             harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "CanRefuel"),
-                prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(CanRefuel_Postfix)), transpiler: null);
+                prefix: null, postfix: new HarmonyMethod(patchType, nameof(CanRefuel_Postfix)), transpiler: null);
 
             harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "FindBestFuel"),
-                prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(FindBestFuel_Postfix)), transpiler: null);
+                prefix: null, postfix: new HarmonyMethod(patchType, nameof(FindBestFuel_Postfix)), transpiler: null);
 
             harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "FindAllFuel"),
-                prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(FindAllFuel_Postfix)), transpiler: null);
+                prefix: null, postfix: new HarmonyMethod(patchType, nameof(FindAllFuel_Postfix)), transpiler: null);
 
             harmonyInstance.Patch(original: AccessTools.Method(type: typeof(CompRefuelable), name: "GetFuelCountToFullyRefuel"),
-                prefix: null, postfix: new HarmonyMethod(type: patchType, name: nameof(GetFuelCountToFullyRefuel_Postfix)), transpiler: null);
+                prefix: null, postfix: new HarmonyMethod(patchType, nameof(GetFuelCountToFullyRefuel_Postfix)), transpiler: null);
 
         }
 

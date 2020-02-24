@@ -4,8 +4,22 @@
 	<author>jptrrs</author>
   <supportedVersions>
     <li>1.0</li>
+    <li>1.1</li>
   </supportedVersions>
-	<description>
+  <packageId>JPT.BurnItForFuel</packageId>
+    <modDependencies>
+      <li>
+        <packageId>UnlimitedHugs.HugsLib</packageId>
+        <displayName>HugsLib</displayName>
+        <steamWorkshopUrl>steam://url/CommunityFilePage/818773962</steamWorkshopUrl>
+      </li>
+    </modDependencies>
+  <loadAfter>
+    <li>UnlimitedHugs.HugsLib</li>
+    <!--<li>Charlotte.MendAndRecycle</li>
+    <li>Bishop.MendingMedieval</li>-->
+  </loadAfter>
+  <description>
 If you can burn wood for heat, why not use chemfuel as well? Or even cloth or other plants? This mod will enable you to select what type of fuel will be consumed by torches, campfires, stoves, smithies or any other fueled buildings - vanilla or modded - even passive coolers!
   </description>
 	<url>https://steamcommunity.com/id/jptrrs/myworkshopfiles/?appid=294100</url>
