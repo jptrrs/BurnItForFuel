@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+﻿using Harmony;
 using RimWorld;
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace BurnItForFuel
 
         static HarmonyPatches()
         {
-            var harmonyInstance = new Harmony("JPT_BurnItForFuel");
+            var harmonyInstance = HarmonyInstance.Create("JPT_BurnItForFuel");
 
             harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "CanRefuel"),
                 prefix: null, postfix: new HarmonyMethod(patchType, nameof(CanRefuel_Postfix)), transpiler: null);

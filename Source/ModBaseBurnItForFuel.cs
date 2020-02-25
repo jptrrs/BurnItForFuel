@@ -23,15 +23,13 @@ namespace BurnItForFuel
             }
         }
 
-        public ThingFilter PossibleFuels
+        public static ThingFilter PossibleFuels
         {
             get
             {
                 var filter = new ThingFilter();
-                ThingDef[] fuelDefs = (from def in DefDatabase<ThingDef>.AllDefsListForReading
-                                       where def.IsWithinCategory(ThingCategoryDefOf.Root)
-                                       select def).ToArray();
-                foreach (ThingDef def in fuelDefs)
+                IEnumerable<ThingDef> fuels = DefDatabase<ThingDef>.AllDefsListForReading.Where(d => d.IsWithinCategory(ThingCategoryDefOf.Root));
+                foreach (ThingDef def in fuels)
                 {
                     filter.SetAllow(def, true);
                 }
