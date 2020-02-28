@@ -47,8 +47,13 @@ namespace BurnItForFuel
 
         public override void Initialize(CompProperties props)
         {
-            Log.Message(parent + " Initializing");
             base.Initialize(props);
+            if (Scribe.mode != LoadSaveMode.PostLoadInit) SetupFuelSettings();
+            SetUpFuelMixing();
+        }
+
+        public void SetupFuelSettings()
+        {
             FuelSettings = new StorageSettings(this);
             if (BaseFuelSettings(parent) != null)
             {
@@ -63,16 +68,15 @@ namespace BurnItForFuel
                     FuelSettings.filter.SetAllow(thingDef, true);
                 }
             }
-            SetUpFuelMixing();
         }
 
         public override void PostExposeData()
         {
-            Log.Message(parent + " PostExposeData");
             base.PostExposeData();
             Scribe_Deep.Look<StorageSettings>(ref FuelSettings, "fuelSettings");
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
+                if (FuelSettings == null) SetupFuelSettings();
                 ValidateFuelSettings();
             }
         }
@@ -82,7 +86,6 @@ namespace BurnItForFuel
             IEnumerable<ThingDef> excess = FuelSettings.filter.AllowedThingDefs.Except(GetParentStoreSettings().filter.AllowedThingDefs);
             if (excess.Count() > 0)
             {
-                //Log.Warning(excess.Count() + " items purged for " + parent);
                 foreach (ThingDef t in excess.ToList())
                 {
                     FuelSettings.filter.SetAllow(t, false);
@@ -115,7 +118,10 @@ namespace BurnItForFuel
 
         public void ValidateFuelSettings()
         {
-            if (Scribe.mode == LoadSaveMode.Inactive) SetUpFuelMixing();
+            if (Scribe.mode == LoadSaveMode.Inactive)
+            {
+                SetUpFuelMixing();
+            }
             if (SafeToMixFuels())
             {
                 foreach (ThingDef def in (from d in FuelSettings.filter.AllowedThingDefs
