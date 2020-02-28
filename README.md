@@ -8,7 +8,7 @@ I've made this out of frustration using <a href="https://steamcommunity.com/shar
 
 <a href="http://ko-fi.com/jptrrs"><img src="https://i.imgur.com/EEgQ2Ss.png" /></a>
 
-[h1]Compatibility</h1>
+<h1>Compatibility</h1>
 <b>Burn It for Fuel</b> was written to be as broadly compatible as possible, detecting any refuelable buldings other mods might add and trying to extend their fuel settings. If for any reason this causes any trouble, please let me know and I'll try to work it out. 
 
 <b>Built-in fuel compatibility:</b>
