@@ -1,4 +1,4 @@
-![Preview](About/Preview.png)
+![Preview](About/preview.png)
 
 # [JPT] Burn It for Fuel!
 Burn whatever you want on RimWorld.
