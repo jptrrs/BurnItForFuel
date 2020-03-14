@@ -1,6 +1,9 @@
-![Preview](https://raw.githubusercontent.com/jptrrs/BurnItForFuel/master/About/preview.png)
+![Preview](About/Preview.png)
 
 # [JPT] Burn It for Fuel!
+Burn whatever you want on RimWorld.
+
+[**>>> DOWNLOAD IT HERE <<<**](https://github.com/jptrrs/BurnItForFuel/releases/latest)
 
 If you can burn wood for heat, why not use chemfuel as well? Or even cloth or other plants? This mod will enable you to select what type of fuel will be consumed by torches, campfires, stoves, smithies or any other fueled buildings - vanilla or modded - even passive coolers! <b>This is done on the mod's option panel</b>, and anything goes! By default, the list includes wood, chemfuel, textiles, plant matter and, if the appropriate mods are present, also lumber, other wood types, coal and charcoal.
 
@@ -8,7 +11,7 @@ I've made this out of frustration using <a href="https://steamcommunity.com/shar
 
 <a href="http://ko-fi.com/jptrrs"><img src="https://i.imgur.com/EEgQ2Ss.png" /></a>
 
-<h1>Compatibility</h1>
+<h2>Compatibility</h2>
 <b>Burn It for Fuel</b> was written to be as broadly compatible as possible, detecting any refuelable buldings other mods might add and trying to extend their fuel settings. If for any reason this causes any trouble, please let me know and I'll try to work it out. 
 
 <b>Built-in fuel compatibility:</b>
@@ -24,18 +27,13 @@ I've made this out of frustration using <a href="https://steamcommunity.com/shar
 </li><li><a href="https://steamcommunity.com/sharedfiles/filedetails/?id=1185265132">VGP Vegetable Garden</a>
 </li></ul>
 
-<b>Special Attention Required:</b>
-<ul>
-<li><a href="https://steamcommunity.com/sharedfiles/filedetails/?id=735241897">MendAndRecycle</a> and <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=1880329210">Mending Medieval</a>: please place this mod after those two on the load order.
-</li></ul>
+<h2>Load order</h2>
+<ol>
+<li>HugsLib
+</li><li><a href="https://steamcommunity.com/sharedfiles/filedetails/?id=735241897">MendAndRecycle</a> and <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=1880329210">Mending Medieval</a>
+</li><li>any other mod mentioned above
+</li><li>this mod
+</li></ol>
 
-<h1>Load order</h1>
-Load HugsLib first, then any mod mentioned above and then Burn It For Fuel.
-
-<h1>Saved Games</h1>
+<h2>Saved Games</h2>
 You can safely add this to your ongoing game, but existing fueled buildings are going to break. Please use the development tools (God Mode) to replace them with new ones.
-
-<h1>GitHub</h1>
-https://github.com/jptrrs/BurnItForFuel
-
-<h3><a href="https://steamcommunity.com/profiles/76561198058222334/myworkshopfiles/?appid=294100">Check my other mods!</a></h3>
