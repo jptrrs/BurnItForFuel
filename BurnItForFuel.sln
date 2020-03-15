@@ -61,6 +61,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Textures", "Textures", "{E9
 		Textures\update1.png = Textures\update1.png
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "News", "News", "{04850F19-967E-4876-94D7-2C3582684C05}"
+	ProjectSection(SolutionItems) = preProject
+		News\update1.png = News\update1.png
+		News\UpdateFeatures.xml = News\UpdateFeatures.xml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		1.0|Any CPU = 1.0|Any CPU

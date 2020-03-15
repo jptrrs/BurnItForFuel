@@ -49,25 +49,26 @@ namespace BurnItForFuel
 
         private static Vector2 scrollPosition;
 
-        private SettingHandle<bool> HasEverBeenSet;
+        private SettingHandle<bool> HasEverBeenSet ;
 
-        public static SettingHandle<FuelSettingsHandle> Fuels;
+        public SettingHandle<FuelSettingsHandle> Fuels;
 
         public override void DefsLoaded()
         {
             HasEverBeenSet = Settings.GetHandle<bool>("HasEverBeenSet", null, null, false);
             HasEverBeenSet.NeverVisible = true;
-            var fuels = Settings.GetHandle<FuelSettingsHandle>("FuelSettings", "", null, null);
-            if (fuels.Value == null) fuels.Value = new FuelSettingsHandle();
+            //var fuels = Settings.GetHandle<FuelSettingsHandle>("FuelSettings", "", null, null);
+            Fuels = Settings.GetHandle<FuelSettingsHandle>("FuelSettings", "", null, null);
+            if (Fuels.Value == null) Fuels.Value = new FuelSettingsHandle();
             //Log.Message("baseFuelSettings has " + fuels.Value.baseFuelSettings.AllowedDefCount+" defs");
-            if (fuels.Value.masterFuelSettings.AllowedDefCount == 0 && !HasEverBeenSet)
+            if (Fuels.Value.masterFuelSettings.AllowedDefCount == 0 && !HasEverBeenSet)
             {
                 Log.Message("[BurnItForFuel] Populating fuel settings for the first time. Default fuels are: "+DefaultFuels.AllowedThingDefs.ToStringSafeEnumerable()+".");
-                fuels.Value.masterFuelSettings = DefaultFuels;
+                Fuels.Value.masterFuelSettings = DefaultFuels;
                 HasEverBeenSet.Value = true;
             }
-            fuels.CustomDrawerHeight = 320f;
-            fuels.CustomDrawer = rect => SettingsUI.CustomDrawer_ThingFilter(rect, ref scrollPosition, ref fuels.Value.masterFuelSettings, PossibleFuels, DefaultFuels);
+            Fuels.CustomDrawerHeight = 320f;
+            Fuels.CustomDrawer = rect => SettingsUI.CustomDrawer_ThingFilter(rect, ref scrollPosition, ref Fuels.Value.masterFuelSettings, PossibleFuels, DefaultFuels, Fuels);
         }
 
         public override void SettingsChanged()
@@ -91,7 +92,6 @@ namespace BurnItForFuel
                         }
                     }
                 });
-
             }
         }
 

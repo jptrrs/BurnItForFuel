@@ -29,6 +29,7 @@
 	<Operation Class="PatchOperationFindMod">
 		<mods>
 			<li>[WD] Simple Coal 1.0</li>
+			<li>[WD] Simple Coal</li>
 		</mods>
 		<match Class="PatchOperationAdd">
       <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
@@ -65,6 +66,7 @@
 	<Operation Class="PatchOperationFindMod">
 		<mods>
 			<li>[1.0] Atlas' Materials</li>
+      <li>Materials+</li>
 		</mods>
 		<match Class="PatchOperationAdd">
       <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
@@ -75,6 +77,19 @@
 				<li>AM_UHMWPlastic</li>
 				<li>AM_Acrylic</li>
 				<li>AM_LWood</li>
+			</value>
+		</match>
+	</Operation>
+
+	<Operation Class="PatchOperationFindMod">
+		<mods>
+			<li>Coal Expanded</li>
+		</mods>
+		<match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
+      <value>
+				<li>Coal</li>
+				<li>Charcoal</li>
 			</value>
 		</match>
 	</Operation>

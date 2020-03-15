@@ -1,13 +1,15 @@
-﻿using RimWorld;
+﻿using HugsLib.Settings;
+using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
+using static BurnItForFuel.ModBaseBurnItForFuel;
 
 namespace BurnItForFuel
 {
     public class SettingsUI
     {
-		public static bool CustomDrawer_ThingFilter(Rect rect, ref Vector2 scrollPosition, ref ThingFilter filter, ThingFilter parentfilter, ThingFilter defaultFilter)
+		public static bool CustomDrawer_ThingFilter(Rect rect, ref Vector2 scrollPosition, ref ThingFilter filter, ThingFilter parentfilter, ThingFilter defaultFilter, SettingHandle<FuelSettingsHandle> fuels)
         {
 			DoThingFilterConfigWindow(rect, ref scrollPosition, ref filter, parentfilter, defaultFilter);
 			Rect labelRect = new Rect(rect);
@@ -15,6 +17,7 @@ namespace BurnItForFuel
 			labelRect.position = new Vector2(labelRect.position.x - rect.width, labelRect.position.y);
 			Text.Anchor = TextAnchor.UpperLeft;
 			Widgets.Label(labelRect, "FuelSettingsNote".Translate());
+			fuels.HasUnsavedChanges = true; 
 			return true;
         }
 

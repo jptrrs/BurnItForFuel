@@ -43,42 +43,37 @@ namespace BurnItForFuel
         public static bool CanRefuel(Pawn pawn, Thing t, bool forced = false)
         {
             CompRefuelable compRefuelable = t.TryGetComp<CompRefuelable>();
-            if (compRefuelable == null || compRefuelable.IsFull)
+            if (compRefuelable == null || compRefuelable.IsFull || (!forced && !compRefuelable.allowAutoRefuel))
             {
                 return false;
             }
-            bool flag = !forced;
-            if (flag && !compRefuelable.ShouldAutoRefuelNow)
+            if (!forced && !compRefuelable.ShouldAutoRefuelNow)
             {
                 return false;
             }
-            if (!t.IsForbidden(pawn))
+            if (t.IsForbidden(pawn) || !pawn.CanReserve(t, 1, -1, null, forced))
             {
-                LocalTargetInfo target = t;
-                if (pawn.CanReserve(target, 1, -1, null, forced))
-                {
-                    if (t.Faction != pawn.Faction)
-                    {
-                        return false;
-                    }
-                    ThingFilter fuelFilter = new ThingFilter();
-                    CompSelectFuel comp = t.TryGetComp<CompSelectFuel>();
-                    comp.PurgeFuelSettings();
-                    fuelFilter = comp.FuelSettings.filter;
-                    if (FindBestFuel(pawn, t) == null)
-                    {
-                        JobFailReason.Is("NoFuelToRefuel".Translate(fuelFilter.Summary), null);
-                        return false;
-                    }
-                    if (t.TryGetComp<CompRefuelable>().Props.atomicFueling && FindAllFuel(pawn, t) == null)
-                    {
-                        JobFailReason.Is("NoFuelToRefuel".Translate(fuelFilter.Summary), null);
-                        return false;
-                    }
-                    return true;
-                }
+                return false;
             }
-            return false;
+            if (t.Faction != pawn.Faction)
+            {
+                return false;
+            }
+            ThingFilter fuelFilter = new ThingFilter();
+            CompSelectFuel comp = t.TryGetComp<CompSelectFuel>();
+            comp.PurgeFuelSettings();
+            fuelFilter = comp.FuelSettings.filter;
+            if (FindBestFuel(pawn, t) == null)
+            {
+                JobFailReason.Is("NoFuelToRefuel".Translate(fuelFilter.Summary), null);
+                return false;
+            }
+            if (t.TryGetComp<CompRefuelable>().Props.atomicFueling && FindAllFuel(pawn, t) == null)
+            {
+                JobFailReason.Is("NoFuelToRefuel".Translate(fuelFilter.Summary), null);
+                return false;
+            }
+            return true;
         }
 
         public static void FindBestFuel_Postfix(Pawn pawn, Thing refuelable, ref Thing __result)
