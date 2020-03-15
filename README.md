@@ -17,7 +17,7 @@ I've made this out of frustration using <a href="https://steamcommunity.com/shar
 <b>Built-in fuel compatibility:</b>
 <ul>
 <li><a href="https://steamcommunity.com/sharedfiles/filedetails/?id=1541903513">Atlas' Materials</a>
-</li><li><a href="https://steamcommunity.com/sharedfiles/filedetails/?id=1525404710">Coal</a>
+</li><li><a href="https://steamcommunity.com/sharedfiles/filedetails/?id=1525404710">Coal</a> &amp; <a href="https://steamcommunity.com/sharedfiles/filedetails/?id=1874344070">Coal Expanded</a>
 </li><li><a href="https://steamcommunity.com/sharedfiles/filedetails/?id=1082915328">Expanded Woodworking</a>
 </li><li><a href="https://steamcommunity.com/sharedfiles/filedetails/?id=732569232">Medieval Times</a>
 </li><li><a href="https://steamcommunity.com/sharedfiles/filedetails/?id=1606766209">Rimhammer - The End Times</a>
