@@ -1,8 +1,10 @@
-﻿using HugsLib;
+﻿using HarmonyLib;
+using HugsLib;
 using HugsLib.Settings;
 using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using Verse;
 
@@ -57,10 +59,8 @@ namespace BurnItForFuel
         {
             HasEverBeenSet = Settings.GetHandle<bool>("HasEverBeenSet", null, null, false);
             HasEverBeenSet.NeverVisible = true;
-            //var fuels = Settings.GetHandle<FuelSettingsHandle>("FuelSettings", "", null, null);
             Fuels = Settings.GetHandle<FuelSettingsHandle>("FuelSettings", "", null, null);
             if (Fuels.Value == null) Fuels.Value = new FuelSettingsHandle();
-            //Log.Message("baseFuelSettings has " + fuels.Value.baseFuelSettings.AllowedDefCount+" defs");
             if (Fuels.Value.masterFuelSettings.AllowedDefCount == 0 && !HasEverBeenSet)
             {
                 Log.Message("[BurnItForFuel] Populating fuel settings for the first time. Default fuels are: "+DefaultFuels.AllowedThingDefs.ToStringSafeEnumerable()+".");
