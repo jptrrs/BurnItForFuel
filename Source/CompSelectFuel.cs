@@ -59,7 +59,10 @@ namespace BurnItForFuel
             {
                 if ((!FuelSettingsIncludeBaseFuel() || IsVehicle()) && !parent.def.GetCompProperties<CompProperties_Refuelable>().atomicFueling)
                 {
-                    if (!FuelSettingsIncludeBaseFuel()) Log.Message("[BurnItForFuel] " + BaseFuelSettings(parent).ToString() + " is used by the " + parent.Label + ", but it isn't marked as fuel. Fuel tab disabled. Change the settings or add <atomicFueling>true</atomicFueling> to its CompProperties_Refuelable to prevent this.");
+                    if (!FuelSettingsIncludeBaseFuel()) 
+                    { 
+                        Log.Message("[BurnItForFuel] " + BaseFuelSettings(parent).ToString() + " is used by the " + parent.Label + ", but it isn't marked as fuel. Fuel tab disabled. Change the settings or add <atomicFueling>true</atomicFueling> to its CompProperties_Refuelable to prevent this.");
+                    }
                     if (IsVehicle()) Log.Message("[BurnItForFuel] " + parent.LabelCap + " looks like its a vehicle, so we're preventing fuel mixing to protect your engines. Fuel tab disabled. Add <atomicFueling>true</atomicFueling> to its CompProperties_Refuelable to prevent this.");
                     FuelSettings.filter.SetAllowAll(BaseFuelSettings(parent));
                 }
@@ -106,11 +109,14 @@ namespace BurnItForFuel
         public bool FuelSettingsIncludeBaseFuel() //e.g: Dubs Hygiene Burning Pit doesn't. 
         {
             bool flag = false;
-            foreach (ThingDef thingDef in BaseFuelSettings(parent).AllowedThingDefs)
+            if (BaseFuelSettings(parent) != null)
             {
-                if (UserFuelSettings().Allows(thingDef))
+                foreach (ThingDef thingDef in BaseFuelSettings(parent).AllowedThingDefs)
                 {
-                    flag |= true;
+                    if (UserFuelSettings().Allows(thingDef))
+                    {
+                        flag |= true;
+                    }
                 }
             }
             return flag;

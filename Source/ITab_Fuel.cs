@@ -10,7 +10,7 @@ namespace BurnItForFuel
             labelKey = "TabFuel";
         }
 
-        protected override IStoreSettingsParent SelStoreSettingsParent
+        public override IStoreSettingsParent SelStoreSettingsParent
         {
             get
             {
@@ -24,7 +24,7 @@ namespace BurnItForFuel
             }
         }
 
-        protected override bool IsPrioritySettingVisible
+        public override bool IsPrioritySettingVisible
         {
             get
             {
