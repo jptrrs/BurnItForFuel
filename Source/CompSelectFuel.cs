@@ -50,6 +50,7 @@ namespace BurnItForFuel
             base.Initialize(props);
             if (Scribe.mode != LoadSaveMode.PostLoadInit) SetupFuelSettings();
             SetUpFuelMixing();
+            //Log.Message("select fuel comp initialized by " + parent);
         }
 
         public void SetupFuelSettings()

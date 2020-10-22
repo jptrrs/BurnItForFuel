@@ -69,6 +69,7 @@
     </Reference>
     <Reference Include="Assembly-CSharp_publicized">
       <HintPath>..\..\..\RimWorldWin64_Data\Managed\publicized_assemblies\Assembly-CSharp_publicized.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="HugsLib">
       <HintPath>..\..\..\..\..\workshop\content\294100\818773962\v1.1\Assemblies\HugsLib.dll</HintPath>
