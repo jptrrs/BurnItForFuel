@@ -66,7 +66,7 @@ namespace BurnItForFuel
                 HasEverBeenSet.Value = true;
             }
             Fuels.CustomDrawerHeight = 320f;
-            Fuels.CustomDrawer = rect => SettingsUI.CustomDrawer_ThingFilter(rect, ref scrollPosition, ref Fuels.Value.masterFuelSettings, PossibleFuels, DefaultFuels, Fuels);
+            Fuels.CustomDrawer = rect => SettingsUI.CustomDrawer_ThingFilter(rect, ref Fuels.Value.masterFuelSettings, PossibleFuels, DefaultFuels, Fuels);
         }
 
         public override void SettingsChanged()
