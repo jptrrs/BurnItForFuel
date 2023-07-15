@@ -3,7 +3,6 @@ using System.Linq;
 using HugsLib;
 using RimWorld;
 using Verse;
-using static BurnItForFuel.ModBaseBurnItForFuel;
 
 namespace BurnItForFuel;
 
@@ -199,7 +198,7 @@ public class CompSelectFuel : ThingComp, IStoreSettingsParent
     private static ThingFilter UserFuelSettings()
     {
         var pack = HugsLibController.SettingsManager.GetModSettings("JPT_BurnItForFuel");
-        return pack.GetHandle<FuelSettingsHandle>("FuelSettings").Value.masterFuelSettings;
+        return pack.GetHandle<ModBaseBurnItForFuel.FuelSettingsHandle>("FuelSettings").Value.masterFuelSettings;
     }
 
     private bool IsVehicle()

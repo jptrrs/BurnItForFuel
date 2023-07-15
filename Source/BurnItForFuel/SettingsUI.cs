@@ -5,7 +5,6 @@ using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
-using static BurnItForFuel.ModBaseBurnItForFuel;
 
 namespace BurnItForFuel;
 
@@ -21,7 +20,7 @@ public class SettingsUI
     private static float viewHeight;
 
     public static bool CustomDrawer_ThingFilter(Rect rect, ref ThingFilter filter, ThingFilter parentfilter,
-        ThingFilter defaultFilter, SettingHandle<FuelSettingsHandle> fuels)
+        ThingFilter defaultFilter, SettingHandle<ModBaseBurnItForFuel.FuelSettingsHandle> fuels)
     {
         DoThingFilterConfigWindow(rect, thingFilterState, ref filter, parentfilter, defaultFilter);
         var labelRect = new Rect(rect);
