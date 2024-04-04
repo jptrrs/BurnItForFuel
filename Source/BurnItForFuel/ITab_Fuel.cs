@@ -10,7 +10,7 @@ public class ITab_Fuel : ITab_Storage
         labelKey = "TabFuel";
     }
 
-    public override IStoreSettingsParent SelStoreSettingsParent
+    protected override IStoreSettingsParent SelStoreSettingsParent
     {
         get
         {
@@ -20,5 +20,5 @@ public class ITab_Fuel : ITab_Storage
         }
     }
 
-    public override bool IsPrioritySettingVisible => false;
+    protected override bool IsPrioritySettingVisible => false;
 }

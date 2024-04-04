@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
@@ -31,7 +30,7 @@ public static class HarmonyPatches
             null, new HarmonyMethod(patchType, nameof(GetFuelCountToFullyRefuel_Postfix)));
     }
 
-    public static void CanRefuel_Postfix(object __instance, Pawn pawn, Thing t, bool forced, ref bool __result)
+    public static void CanRefuel_Postfix(Pawn pawn, Thing t, bool forced, ref bool __result)
     {
         if (t.TryGetComp<CompSelectFuel>() != null)
         {
@@ -43,6 +42,11 @@ public static class HarmonyPatches
     {
         var compRefuelable = t.TryGetComp<CompRefuelable>();
         if (compRefuelable == null || compRefuelable.IsFull || !forced && !compRefuelable.allowAutoRefuel)
+        {
+            return false;
+        }
+
+        if (compRefuelable.FuelPercentOfMax > 0f && !compRefuelable.Props.allowRefuelIfNotEmpty)
         {
             return false;
         }
@@ -59,6 +63,13 @@ public static class HarmonyPatches
 
         if (t.Faction != pawn.Faction)
         {
+            return false;
+        }
+
+        var compActivable = t.TryGetComp<CompInteractable>();
+        if (compActivable != null && compActivable.Props.cooldownPreventsRefuel && compActivable.OnCooldown)
+        {
+            JobFailReason.Is(compActivable.Props.onCooldownString.CapitalizeFirst());
             return false;
         }
 
@@ -93,11 +104,6 @@ public static class HarmonyPatches
         //Log.Message("FindBestFuel_Postfix for: "+refuelable);
         var filter = refuelable.TryGetComp<CompSelectFuel>().FuelSettings.filter;
 
-        bool Predicate(Thing x)
-        {
-            return !x.IsForbidden(pawn) && pawn.CanReserve(x) && filter.Allows(x);
-        }
-
         var position = pawn.Position;
         var map = pawn.Map;
         var bestThingRequest = filter.BestThingRequest;
@@ -106,10 +112,14 @@ public static class HarmonyPatches
         var validator = (Predicate<Thing>)Predicate;
         return GenClosest.ClosestThingReachable(position, map, bestThingRequest, peMode, traverseParams, 9999f,
             validator);
+
+        bool Predicate(Thing x)
+        {
+            return !x.IsForbidden(pawn) && pawn.CanReserve(x) && filter.Allows(x);
+        }
     }
 
-    public static void FindAllFuel_Postfix(Pawn pawn, Thing refuelable, ref List<Thing> __result,
-        MethodInfo __originalMethod)
+    public static void FindAllFuel_Postfix(Pawn pawn, Thing refuelable, ref List<Thing> __result)
     {
         if (refuelable.TryGetComp<CompSelectFuel>() != null)
         {
@@ -123,24 +133,27 @@ public static class HarmonyPatches
         var quantity = GetFuelCountToFullyRefuel(comp);
         var filter = refuelable.TryGetComp<CompSelectFuel>().FuelSettings.filter;
 
-        bool Validator(Thing x)
-        {
-            return !x.IsForbidden(pawn) && pawn.CanReserve(x) && filter.Allows(x);
-        }
-
         var position = refuelable.Position;
         var region =
             position.GetRegion(pawn
                 .Map); // NOTE: comes out null if refuelable is inside a wall, even with matching RegionType. Why?
         var traverseParams = TraverseParms.For(pawn);
 
+        var chosenThings = new List<Thing>();
+        var accumulatedQuantity = 0;
+
+        RegionTraverser.BreadthFirstTraverse(region, EntryCondition, RegionProcessor, 99999);
+        return accumulatedQuantity >= quantity ? chosenThings : null;
+
+        bool Validator(Thing x)
+        {
+            return !x.IsForbidden(pawn) && pawn.CanReserve(x) && filter.Allows(x);
+        }
+
         bool EntryCondition(Region from, Region r)
         {
             return r.Allows(traverseParams, false);
         }
-
-        var chosenThings = new List<Thing>();
-        var accumulatedQuantity = 0;
 
         bool RegionProcessor(Region r)
         {
@@ -172,9 +185,6 @@ public static class HarmonyPatches
 
             return false;
         }
-
-        RegionTraverser.BreadthFirstTraverse(region, EntryCondition, RegionProcessor, 99999);
-        return accumulatedQuantity >= quantity ? chosenThings : null;
     }
 
     public static void GetFuelCountToFullyRefuel_Postfix(CompRefuelable __instance, ref int __result)
@@ -184,6 +194,11 @@ public static class HarmonyPatches
 
     public static int GetFuelCountToFullyRefuel(CompRefuelable __instance)
     {
+        if (__instance.Props.atomicFueling)
+        {
+            return Mathf.CeilToInt(__instance.Props.fuelCapacity / __instance.Props.FuelMultiplierCurrentDifficulty);
+        }
+
         var f = (__instance.TargetFuelLevel - __instance.Fuel) / __instance.Props.FuelMultiplierCurrentDifficulty;
         return Mathf.Max(Mathf.CeilToInt(f), 1);
     }

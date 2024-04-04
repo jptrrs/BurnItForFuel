@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-using HarmonyLib;
-using HugsLib.Settings;
+﻿using HugsLib.Settings;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -11,9 +9,6 @@ namespace BurnItForFuel;
 public class SettingsUI
 {
     private const float buttonHeight = 24f;
-
-    private static MethodInfo DoCategoryChildrenInfo = AccessTools.Method(typeof(Listing_TreeThingFilter),
-        nameof(Listing_TreeThingFilter.DoCategoryChildren));
 
     private static readonly ThingFilterUI.UIState thingFilterState = new ThingFilterUI.UIState();
 

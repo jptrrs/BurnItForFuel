@@ -9,6 +9,7 @@
     <li>1.2</li>
     <li>1.3</li>
     <li>1.4</li>
+    <li>1.5</li>
   </supportedVersions>
   <modDependencies>
     <li>
@@ -43,17 +44,10 @@ Update of jptrrss mod https://steamcommunity.com/sharedfiles/filedetails/?id=182
 [/table]
 	
 [img]https://i.imgur.com/Z4GOv8H.png[/img]
-[img]https://i.imgur.com/p7Fv1Z6.gif[/img]
 
 If you can burn wood for heat, why not use chemfuel as well? Or even cloth or other plants? This mod will enable you to select what type of fuel will be consumed by torches, campfires, stoves, smithies or any other fueled buildings - vanilla or modded - even passive coolers! [b]This is done on the mod's option panel[/b], and anything goes! By default, the list includes wood, chemfuel, textiles, plant matter and, if the appropriate mods are present, also lumber, other wood types, coal and charcoal.
 
 I've made this out of frustration using [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1082915328]Expanded Woodworking[/url] and not being able to burn lumber while my pawns happily threw my precious oak logs into the fire!
-
-[h2][b]Like what you see?[/b] Consider supporting the mod![/h2]
-Making and maintaining mods takes a lot of work! Contribute however it suits you:
-
-[url=https://www.patreon.com/jptrrs][img]https://imgur.com/DSHGDU0.png[/img][/url]
-[url=http://ko-fi.com/jptrrs][img]https://i.imgur.com/DGq6so3.png[/img][/url]
 
 [h1]Compatibility[/h1]
 [b]Burn It for Fuel[/b] was written to be as broadly compatible as possible, detecting any refuelable buldings other mods might add and trying to extend their fuel settings. If for any reason this causes any trouble, please let me know and I'll try to work it out. 
@@ -61,7 +55,7 @@ Making and maintaining mods takes a lot of work! Contribute however it suits you
 [b]Built-in fuel compatibility:[/b]
 [list]
 [*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=1541903513]Atlas' Materials[/url]
-[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=1525404710]Coal[/url] &amp;amp; [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1874344070]Coal Expanded[/url]
+[*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=1525404710]Coal[/url] and [url=https://steamcommunity.com/sharedfiles/filedetails/?id=1874344070]Coal Expanded[/url]
 [*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=1082915328]Expanded Woodworking[/url]
 [*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=732569232]Medieval Times[/url]
 [*][url=https://steamcommunity.com/sharedfiles/filedetails/?id=1606766209]Rimhammer - The End Times[/url]
@@ -90,18 +84,19 @@ EN, PT, PT-BR, RU, ZH.
 Translations by leafzxg(ZH) and richardwhitewood1998 (RU). 
 [b]Thank you![/b]
 
-[h1]GitHub[/h1]
-https://github.com/jptrrs/BurnItForFuel
-
 [h3][url=https://steamcommunity.com/profiles/76561198058222334/myworkshopfiles/?appid=294100]Check my other mods![/url][/h3]
 
 [img]https://i.imgur.com/PwoNOj4.png[/img]
 [list]
 [*] See if the the error persists if you just have this mod and its requirements active.
 [*] If not, try adding your other mods until it happens again.
-[*] Post your error-log using [url=https://steamcommunity.com/workshop/filedetails/?id=818773962]HugsLib[/url] and command Ctrl+F12
+[*] Post your error-log using [url=https://steamcommunity.com/workshop/filedetails/?id=818773962]HugsLib[/url] or the standalone [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2873415404]Uploader[/url] and command Ctrl+F12
 [*] For best support, please use the Discord-channel for error-reporting.
 [*] Do not report errors by making a discussion-thread, I get no notification of that.
 [*] If you have the solution for a problem, please post it to the GitHub repository.
-[/list]</description>
+[*] Use [url=https://github.com/RimSort/RimSort/releases/latest]RimSort[/url] to sort your mods
+[/list]
+
+[url=https://steamcommunity.com/sharedfiles/filedetails/changelog/3004932466][img]https://img.shields.io/github/v/release/emipa606/JPTBurnItForFuel?label=latest%20version&amp;style=plastic&amp;color=9f1111&amp;labelColor=black[/img][/url]</description>
+  <modVersion IgnoreIfNoMatchingField="True">1.5.0</modVersion>
 </ModMetaData>
