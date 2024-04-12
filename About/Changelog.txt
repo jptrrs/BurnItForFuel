@@ -1,5 +1,8 @@
 # Changelog for JPTBurnItForFuel
 
+1.5.1 - Should no longer remove the shell-selector for mortars with reinforced barrels
+
+
 1.5.0 - Mod updated for 1.5 and passed autotests
 
 
