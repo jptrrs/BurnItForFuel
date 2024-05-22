@@ -1,7 +1,7 @@
 # Changelog for JPTBurnItForFuel
 
 1.5.2 - Mod settings will only show if an active game.
-Used DeepL to update translations for ChineseSimplified, French, German, Portuguese, Russian
+
 
 
 1.5.1 - Should no longer remove the shell-selector for mortars with reinforced barrels
