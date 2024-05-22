@@ -17,7 +17,15 @@ public class SettingsUI
     public static bool CustomDrawer_ThingFilter(Rect rect, ref ThingFilter filter, ThingFilter parentfilter,
         ThingFilter defaultFilter, SettingHandle<ModBaseBurnItForFuel.FuelSettingsHandle> fuels)
     {
+        if (Current.Game == null)
+        {
+            Widgets.Label(new Rect(rect.x + 1f, rect.y + 1f, rect.width - 2f, 60f),
+                "RequiresAnActiveGame".Translate());
+            return false;
+        }
+
         DoThingFilterConfigWindow(rect, thingFilterState, ref filter, parentfilter, defaultFilter);
+
         var labelRect = new Rect(rect);
         labelRect.width -= 20f;
         labelRect.position = new Vector2(labelRect.position.x - rect.width, labelRect.position.y);

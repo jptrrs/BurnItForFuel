@@ -9,4 +9,5 @@
 &lt;b&gt;3.&lt;/b&gt; The Pod Laucher and any other building that allows for fuel level adjustment are also excluded.
 &lt;b&gt;4.&lt;/b&gt; Fuel units are always the same for any resource: 1 unit = 1 fuel.
 </FuelSettingsNote>
+  <RequiresAnActiveGame>The fuel-select options are only available with an ongoing game as the categories are not generated correctly otherwise.</RequiresAnActiveGame>
 </LanguageData>

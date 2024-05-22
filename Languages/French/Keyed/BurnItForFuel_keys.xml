@@ -9,4 +9,5 @@
 &lt;b&gt;2.&lt;/b&gt; Désélectionner une ressource normalement utilisée par un bâtiment (&lt;i&gt;par exemple les bûches de bois pour le feu de camp&lt;/i&gt;) désactivera l'onglet carburant de ce bâtiment, et il reviendra à l'utilisation de son carburant d'origine.
 &lt;b&gt;3.&lt;/b&gt; Le Pod Laucher et tout autre bâtiment permettant de régler le niveau de carburant sont également exclus.
 &lt;b&gt;4.&lt;/b&gt; Les unités de carburant sont toujours les mêmes pour toutes les ressources : 1 unité = 1 carburant.</FuelSettingsNote>
+  <RequiresAnActiveGame>Les options de sélection de carburant ne sont disponibles qu'avec un jeu en cours, car les catégories ne sont pas générées correctement dans le cas contraire.</RequiresAnActiveGame>
 </LanguageData>
