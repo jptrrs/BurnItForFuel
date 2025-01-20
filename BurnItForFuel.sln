@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29728.190
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BurnItForFuel", "Source\BurnItForFuel.csproj", "{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}"
 EndProject
@@ -104,6 +104,9 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		1.1|Any CPU = 1.1|Any CPU
 		1.2|Any CPU = 1.2|Any CPU
+		1.3|Any CPU = 1.3|Any CPU
+		1.4|Any CPU = 1.4|Any CPU
+		1.5|Any CPU = 1.5|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
@@ -112,6 +115,12 @@ Global
 		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.1.1|Any CPU.Build.0 = 1.1|Any CPU
 		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.1.2|Any CPU.ActiveCfg = 1.2|Any CPU
 		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.1.2|Any CPU.Build.0 = 1.2|Any CPU
+		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.1.3|Any CPU.ActiveCfg = 1.3|Any CPU
+		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.1.3|Any CPU.Build.0 = 1.3|Any CPU
+		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.1.4|Any CPU.ActiveCfg = 1.4|Any CPU
+		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.1.4|Any CPU.Build.0 = 1.4|Any CPU
+		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.1.5|Any CPU.ActiveCfg = 1.5|Any CPU
+		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.1.5|Any CPU.Build.0 = 1.5|Any CPU
 		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.Release|Any CPU.ActiveCfg = Release|Any CPU

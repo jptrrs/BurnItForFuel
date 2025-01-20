@@ -173,9 +173,5 @@ namespace BurnItForFuel
         {
             return FuelSettingsIncludeBaseFuel() && parent.def.passability != Traversability.Impassable && !parent.def.building.canPlaceOverWall && !IsVehicle();
         }
-
-        public void Notify_SettingsChanged()
-        {
-        }
     }
 }
