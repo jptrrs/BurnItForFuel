@@ -1,98 +1,124 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Patch>
-
-	<Operation Class="PatchOperationFindMod">
-		<mods>
-			<li>Coal</li>
-		</mods>
-		<match Class="PatchOperationAdd">
-			<xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
-      <value>
-				<li>Coal</li>
-				<li>Charcoal</li>
-			</value>
-		</match>
-	</Operation>
-
-	<Operation Class="PatchOperationFindMod">
-		<mods>
-			<li>Rimhammer - The End Times</li>
-		</mods>
-		<match Class="PatchOperationAdd">
+	<!--Coal-->
+  <Operation Class="PatchOperationConditional">
+    <xpath>/Defs/ThingDef[defName = "Coal"]</xpath>
+    <match Class="PatchOperationAdd">
       <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
       <value>
-				<li>RH_TET_Coal</li>
-			</value>
-		</match>
-	</Operation>
-
-	<Operation Class="PatchOperationFindMod">
-		<mods>
-			<li>[WD] Simple Coal 1.0</li>
-			<li>[WD] Simple Coal</li>
-		</mods>
-		<match Class="PatchOperationAdd">
+        <li>Coal</li>
+      </value>
+    </match>
+  </Operation>
+  <Operation Class="PatchOperationConditional">
+    <xpath>/Defs/ThingDef[defName = "Charcoal"]</xpath>
+    <match Class="PatchOperationAdd">
       <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
       <value>
-				<li>WDCoal</li>
-			</value>
-		</match>
-	</Operation>
-
-	<Operation Class="PatchOperationFindMod">
-		<mods>
-			<li>Medieval Times</li>
-		</mods>
-		<match Class="PatchOperationAdd">
+        <li>Charcoal</li>
+      </value>
+    </match>
+  </Operation>  
+  
+	<!--Rimhammer - The End Times-->
+  <Operation Class="PatchOperationConditional">
+    <xpath>/Defs/ThingDef[defName = "RH_TET_Coal"]</xpath>
+    <match Class="PatchOperationAdd">
       <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
       <value>
-				<li>MedTimes_Resource_Coal</li>
-			</value>
-		</match>
-	</Operation>
+        <li>RH_TET_Coal</li>
+      </value>
+    </match>
+  </Operation>
 
-	<Operation Class="PatchOperationFindMod">
-		<mods>
-			<li>Survivalist's Additions</li>
-		</mods>
-		<match Class="PatchOperationAdd">
-			<xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
-      <value>
-				<li>SRV_Charcoal</li>
-			</value>
-		</match>
-	</Operation>
-
-	<Operation Class="PatchOperationFindMod">
-		<mods>
-			<li>[1.0] Atlas' Materials</li>
-      <li>Materials+</li>
-		</mods>
-		<match Class="PatchOperationAdd">
+  <!--[WD] Simple Coal-->
+  <Operation Class="PatchOperationConditional">
+    <xpath>/Defs/ThingDef[defName = "WDCoal"]</xpath>
+    <match Class="PatchOperationAdd">
       <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
       <value>
-				<li>AM_Coal</li>
-				<li>AM_CokeCoal</li>
-				<li>AM_MixedPlastic</li>
-				<li>AM_UHMWPlastic</li>
-				<li>AM_Acrylic</li>
-				<li>AM_LWood</li>
-			</value>
-		</match>
-	</Operation>
+        <li>WDCoal</li>
+      </value>
+    </match>
+  </Operation>
 
-	<Operation Class="PatchOperationFindMod">
-		<mods>
-			<li>Coal Expanded</li>
-		</mods>
-		<match Class="PatchOperationAdd">
+  <!--Medieval Times-->
+  <Operation Class="PatchOperationConditional">
+    <xpath>/Defs/ThingDef[defName = "MedTimes_Resource_Coal"]</xpath>
+    <match Class="PatchOperationAdd">
       <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
       <value>
-				<li>Coal</li>
-				<li>Charcoal</li>
-			</value>
-		</match>
-	</Operation>
+        <li>MedTimes_Resource_Coal</li>
+      </value>
+    </match>
+  </Operation>
+  
+  <!--Survivalist's Additions-->
+  <Operation Class="PatchOperationConditional">
+    <xpath>/Defs/ThingDef[defName = "SRV_Charcoal"]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
+      <value>
+        <li>SRV_Charcoal</li>
+      </value>
+    </match>
+  </Operation>
+
+  <!-- Atlas' Materials / Materials+ -->
+  <Operation Class="PatchOperationConditional">
+    <xpath>/Defs/ThingDef[defName = "AM_Coal"]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
+      <value>
+        <li>AM_Coal</li>
+      </value>
+    </match>
+  </Operation>
+  <Operation Class="PatchOperationConditional">
+    <xpath>/Defs/ThingDef[defName = "AM_CokeCoal"]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
+      <value>
+        <li>AM_CokeCoal</li>
+      </value>
+    </match>
+  </Operation>
+  <Operation Class="PatchOperationConditional">
+    <xpath>/Defs/ThingDef[defName = "AM_MixedPlastic"]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
+      <value>
+        <li>AM_MixedPlastic</li>
+      </value>
+    </match>
+  </Operation>
+  <Operation Class="PatchOperationConditional">
+    <xpath>/Defs/ThingDef[defName = "AM_UHMWPlastic"]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
+      <value>
+        <li>AM_UHMWPlastic</li>
+      </value>
+    </match>
+  </Operation>  
+  <Operation Class="PatchOperationConditional">
+    <xpath>/Defs/ThingDef[defName = "AM_Acrylic"]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
+      <value>
+        <li>AM_Acrylic</li>
+      </value>
+    </match>
+  </Operation>    
+  <Operation Class="PatchOperationConditional">
+    <xpath>/Defs/ThingDef[defName = "AM_LWood"]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
+      <value>
+        <li>AM_LWood</li>
+      </value>
+    </match>
+  </Operation>
 
 </Patch>
 

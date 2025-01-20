@@ -1,17 +1,32 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Patch>
-  <Operation Class="PatchOperationFindMod">
-    <mods>
-      <li>VGP Vegetable Garden</li>
-    </mods>
+  <!--VGP Vegetable Garden-->
+  <Operation Class="PatchOperationConditional">
+    <xpath>/Defs/ThingDef[defName = "Bamboo"]</xpath>
     <match Class="PatchOperationAdd">
       <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
       <value>
         <li>Bamboo</li>
+      </value>
+    </match>
+  </Operation>
+  <Operation Class="PatchOperationConditional">
+    <xpath>/Defs/ThingDef[defName = "VG_IronWoodLog"]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
+      <value>
         <li>VG_IronWoodLog</li>
+      </value>
+    </match>
+  </Operation>
+  <Operation Class="PatchOperationConditional">
+    <xpath>/Defs/ThingDef[defName = "VG_Biofuel"]</xpath>
+    <match Class="PatchOperationAdd">
+      <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/thingDefs</xpath>
+      <value>
         <li>VG_Biofuel</li>
       </value>
-    </match> 
+    </match>
   </Operation>
 </Patch>
 

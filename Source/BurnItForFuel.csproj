@@ -385,6 +385,7 @@
   <Target Name="ModFiles" AfterTargets="Build">
     <ItemGroup>
       <Assembly Include="..\*.*\**\*.dll" />
+      <Assembly Include="..\*.*\**\*.xml" />
       <About Include="..\About\*.*" />
       <Defs Include="..\Defs\**\*.*" />
       <Languages Include="..\Languages\**\*.*" />

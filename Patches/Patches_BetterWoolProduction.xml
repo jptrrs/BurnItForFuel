@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Patch>
-  <!--Expanded Woodworking-->
+  <!--Better Wool Production-->
   <Operation Class="PatchOperationConditional">
-    <xpath>/Defs/ThingCategoryDef[defName = "WoodTypes"]</xpath>
+    <xpath>/Defs/ThingCategoryDef[defName = "BWP_Fleece"]</xpath>
     <match Class="PatchOperationAdd">
       <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/categories</xpath>
       <value>
-        <li>WoodLumber</li>
+        <li>BWP_Fleece</li>
       </value>
     </match>
   </Operation>
   <Operation Class="PatchOperationConditional">
-    <xpath>/Defs/ThingCategoryDef[defName = "WoodLumber"]</xpath>
+    <xpath>/Defs/ThingCategoryDef[defName = "BWP_Wool"]</xpath>
     <match Class="PatchOperationAdd">
       <xpath>/Defs/ThingDef[defName = "BurnItForFuel"]/building/fixedStorageSettings/filter/categories</xpath>
       <value>
-        <li>WoodLumber</li>
+        <li>BWP_Wool</li>
       </value>
     </match>
   </Operation>

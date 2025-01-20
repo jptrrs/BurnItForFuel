@@ -1,8 +1,11 @@
-﻿using HugsLib;
+﻿using HarmonyLib;
+using HugsLib;
 using HugsLib.Settings;
 using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using UnityEngine;
 using Verse;
 
@@ -10,17 +13,13 @@ namespace BurnItForFuel
 {
     public class ModBaseBurnItForFuel : ModBase
     {
+        public SettingHandle<FuelSettingsHandle> Fuels;
+
+        private SettingHandle<bool> HasEverBeenSet;
+
         public ModBaseBurnItForFuel()
         {
             Settings.EntryName = "Burn It For Fuel";
-        }
-        
-        public override string ModIdentifier
-        {
-            get
-            {
-                return "JPT_BurnItForFuel";
-            }
         }
 
         public static ThingFilter PossibleFuels
@@ -37,19 +36,39 @@ namespace BurnItForFuel
             }
         }
 
-        private static ThingFilter DefaultFuels
+        public override string ModIdentifier
         {
             get
             {
-                var filter = new ThingFilter();
-                filter.CopyAllowancesFrom(ThingDef.Named("BurnItForFuel").building.fixedStorageSettings.filter);
-                return filter;
+                return "JPT_BurnItForFuel";
             }
         }
 
-        private SettingHandle<bool> HasEverBeenSet ;
+        private void SetDefaultFuelsOnce()
+        {
+            var filter = new ThingFilter();
+            var defaultsDef = ThingDef.Named("BurnItForFuel");
+            StringBuilder errorMsg = new StringBuilder();
+            if (defaultsDef == null)
+            {
+                errorMsg.Append("[BurnItForFuel] The definition for default fuels couldn't be found!");
+                goto error;
+            }
+            filter.CopyAllowancesFrom(ThingDef.Named("BurnItForFuel").building.fixedStorageSettings.filter);
+            if (filter.AllowedDefCount < 1)
+            {
+                errorMsg.Append("[BurnItForFuel] No fuels have been set by default.");
+                goto error;
+            }
+            Log.Message("[BurnItForFuel] Populating fuel settings for the first time. Default fuels: " + filter.categories.ToStringSafeEnumerable() + ". Default fuel categories: " + filter.AllowedThingDefs.ToStringSafeEnumerable() + "."); 
+            Fuels.Value.masterFuelSettings = filter;
+            HasEverBeenSet.Value = true;
+            return;
 
-        public SettingHandle<FuelSettingsHandle> Fuels;
+            error:
+            Log.Warning(errorMsg.ToString() + " Check the file 'Things.xml' for a ThingDef called 'BurnItForFuel'. The mod will still work, but this is will require manual selection of fuels from the options panel.");
+            return;                
+        }
 
         public override void DefsLoaded()
         {
@@ -57,14 +76,10 @@ namespace BurnItForFuel
             HasEverBeenSet.NeverVisible = true;
             Fuels = Settings.GetHandle<FuelSettingsHandle>("FuelSettings", "", null, null);
             if (Fuels.Value == null) Fuels.Value = new FuelSettingsHandle();
-            if (Fuels.Value.masterFuelSettings.AllowedDefCount == 0 && !HasEverBeenSet)
-            {
-                Log.Message("[BurnItForFuel] Populating fuel settings for the first time. Default fuels are: "+DefaultFuels.AllowedThingDefs.ToStringSafeEnumerable()+".");
-                Fuels.Value.masterFuelSettings = DefaultFuels;
-                HasEverBeenSet.Value = true;
-            }
+            if (!HasEverBeenSet) SetDefaultFuelsOnce();
             Fuels.CustomDrawerHeight = 320f;
-            Fuels.CustomDrawer = rect => SettingsUI.CustomDrawer_ThingFilter(rect, ref Fuels.Value.masterFuelSettings, PossibleFuels, DefaultFuels, Fuels);
+            Fuels.CustomDrawer = rect => SettingsUI.CustomDrawer_ThingFilter(rect, ref Fuels.Value.masterFuelSettings, PossibleFuels, Fuels.Value.masterFuelSettings, Fuels);
+            AccessTools.Method(typeof(DefDatabase<ThingDef>), "Remove").Invoke(this, new object[] { ThingDef.Named("BurnItForFuel") });
         }
 
         public override void SettingsChanged()
