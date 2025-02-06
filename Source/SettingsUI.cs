@@ -2,10 +2,13 @@
 using HugsLib.Settings;
 using RimWorld;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.Playables;
 using Verse;
+using Verse.Noise;
 using Verse.Sound;
 using static BurnItForFuel.ModBaseBurnItForFuel;
 
@@ -16,15 +19,28 @@ namespace BurnItForFuel
         private static MethodInfo DoCategoryChildrenInfo = AccessTools.Method(typeof(Listing_TreeThingFilter), nameof(Listing_TreeThingFilter.DoCategoryChildren));
         private static ThingFilterUI.UIState thingFilterState = new ThingFilterUI.UIState();
 
-        public static bool CustomDrawer_ThingFilter(Rect rect, ref ThingFilter filter, ThingFilter parentfilter, ThingFilter defaultFilter, SettingHandle<FuelSettingsHandle> fuels)
+        public static bool CustomDrawer_ThingFilter(Rect rect, ThingFilter filter, ThingFilter parentfilter, ThingFilter defaultFilter, SettingHandle<FuelSettingsHandle> fuels)
         {
-            DoThingFilterConfigWindow(rect, thingFilterState, ref filter, parentfilter, defaultFilter);
             Rect labelRect = new Rect(rect);
             labelRect.width -= 20f;
             labelRect.position = new Vector2(labelRect.position.x - rect.width, labelRect.position.y);
             Text.Anchor = TextAnchor.UpperLeft;
-            Widgets.Label(labelRect, "FuelSettingsNote".Translate());
-            fuels.HasUnsavedChanges = true;
+            if (Current.ProgramState != ProgramState.Playing)
+            {
+                Widgets.Label(labelRect, "Start or load a game.".Translate());
+            }
+            else
+            {
+                ThingFilterUI.DoThingFilterConfigWindow(rect, thingFilterState, filter, parentfilter, 1, null, DefDatabase<SpecialThingFilterDef>.AllDefs);
+
+                //else
+                //{
+                //    DoThingFilterConfigWindow(rect, thingFilterState, ref filter, parentfilter);
+                //}
+
+                Widgets.Label(labelRect, "FuelSettingsNote".Translate());
+                fuels.HasUnsavedChanges = true;
+            }
             return true;
         }
 
@@ -56,6 +72,15 @@ namespace BurnItForFuel
             {
                 node = parentFilter.DisplayRootCategory;
             }
+            node.catDef.ResolveReferences();
+
+            if (node.catDef.SortedChildThingDefs.NullOrEmpty())
+            {
+                Log.Message($"{node.catDef.defName} has no children");
+                return;
+            }
+
+
             Rect viewRect = new Rect(0f, 0f, rect.width - 16f, viewHeight);
             Rect visibleRect = new Rect(0f, 0f, rect.width, rect.height);
             visibleRect.position += state.scrollPosition;
@@ -64,9 +89,9 @@ namespace BurnItForFuel
             Rect rect4 = new Rect(0f, y, viewRect.width, 9999f);
             visibleRect.position -= rect4.position;
             Listing_TreeThingFilter listing_TreeThingFilter = new Listing_TreeThingFilter(filter, parentFilter, null, DefDatabase<SpecialThingFilterDef>.AllDefs, null, state.quickSearch.filter);
+            listing_TreeThingFilter.visibleRect = rect4;
             listing_TreeThingFilter.Begin(rect4);
-            try { listing_TreeThingFilter.ListCategoryChildren(node, openMask, null, visibleRect); }
-            finally { }
+            DoCategoryChildrenNoMap(listing_TreeThingFilter, node, 0, openMask, new Map(), false);
             listing_TreeThingFilter.End();
             state.quickSearch.noResultsMatched = (listing_TreeThingFilter.matchCount == 0);
             if (Event.current.type == EventType.Layout)
@@ -86,5 +111,143 @@ namespace BurnItForFuel
 
         private static float viewHeight;
         private const float buttonHeight = 24f;
+
+        private static void DoCategoryChildrenNoMap(Listing_TreeThingFilter tree, TreeNode_ThingCategory node, int indentLevel, int openMask, Map map, bool subtreeMatchedSearch)
+        {
+            int step = 0;
+            List<SpecialThingFilterDef> childSpecialFilters = node.catDef.childSpecialFilters;
+            for (int i = 0; i < childSpecialFilters.Count; i++)
+            {
+                if (tree.Visible(childSpecialFilters[i], node))
+                {
+                    tree.DoSpecialFilter(childSpecialFilters[i], indentLevel);
+                }
+            }
+            step++;
+            Log.Message($"STEP {step}");
+
+            foreach (TreeNode_ThingCategory childCategoryNode in node.ChildCategoryNodes)
+            {
+                if (tree.Visible(childCategoryNode) && !HideCategoryDueToSearch(childCategoryNode))
+                {
+                    DoCategoryChildrenNoMap(tree, childCategoryNode, indentLevel, openMask, map, subtreeMatchedSearch);
+                }
+            }
+            step++;
+            Log.Message($"STEP {step}: {!node.catDef.SortedChildThingDefs.NullOrEmpty()} ");
+
+            List<ThingDef> list = new List<ThingDef>();
+            foreach (ThingDef sortedChildThingDef in node.catDef.SortedChildThingDefs)
+            {
+                DoThingDefNoMap(tree, sortedChildThingDef, indentLevel);
+                //if (Find.HiddenItemsManager.Hidden(sortedChildThingDef))
+                //{
+                //    list.Add(sortedChildThingDef);
+                //}
+                //else if (tree.Visible(sortedChildThingDef) && !HideThingDueToSearch(sortedChildThingDef))
+                //{
+                //    DoThingDefNoMap(tree, sortedChildThingDef, indentLevel);
+                //}
+            }
+            step++;
+            Log.Message($"STEP {step}");
+
+            if (!tree.searchFilter.Active && list.Count > 0)
+            {
+                tree.DoUndiscoveredEntry(indentLevel, node.catDef.parent != ThingCategoryDefOf.Corpses, list);
+            }
+            step++;
+            Log.Message($"STEP {step}");
+
+            bool HideCategoryDueToSearch(TreeNode_ThingCategory subCat)
+            {
+                if (!tree.searchFilter.Active || subtreeMatchedSearch) return false;
+                if (tree.CategoryMatches(subCat)) return false;
+                if (tree.ThisOrDescendantsVisibleAndMatchesSearch(subCat)) return false;
+                return true;
+            }
+            step++;
+            Log.Message($"STEP {step}");
+
+            bool HideThingDueToSearch(ThingDef tDef)
+            {
+                if (!tree.searchFilter.Active || subtreeMatchedSearch) return false;
+                return !tree.searchFilter.Matches(tDef);
+            }
+            step++;
+            Log.Message($"STEP {step}");
+        }
+
+        public static void DoThingDefNoMap(Listing_TreeThingFilter tree, ThingDef tDef, int nestLevel)
+        {
+            Color? color = null;
+            if (tree.searchFilter.Matches(tDef))
+            {
+                tree.matchCount++;
+            }
+            else
+            {
+                color = new Color?(Listing_TreeThingFilter.NoMatchColor);
+            }
+
+            if (tDef.uiIcon != null && tDef.uiIcon != BaseContent.BadTex)
+            {
+                nestLevel++;
+                Widgets.DefIcon(new Rect(tree.XAtIndentLevel(nestLevel) - 6f, tree.curY, 20f, 20f), tDef, null, 1f, null, drawPlaceholder: true, color);
+            }
+
+            if (tree.CurrentRowVisibleOnScreen())
+            {
+                bool num = (tree.suppressSmallVolumeTags == null || !tree.suppressSmallVolumeTags.Contains(tDef)) && tDef.IsStuff && tDef.smallVolume;
+                string text = tDef.DescriptionDetailed;
+                if (num)
+                {
+                    text += "\n\n" + "ThisIsSmallVolume".Translate(10.ToStringCached());
+                }
+
+                float num2 = -4f;
+                if (num)
+                {
+                    Rect rect = new Rect(tree.LabelWidth - 19f, tree.curY, 19f, 20f);
+                    Text.Font = GameFont.Small;
+                    Text.Anchor = TextAnchor.UpperRight;
+                    GUI.color = Color.gray;
+                    Widgets.Label(rect, "/" + 10.ToStringCached());
+                    Text.Font = GameFont.Small;
+                    GenUI.ResetLabelAlign();
+                    GUI.color = Color.white;
+                }
+
+                //num2 -= 19f;
+                //if (map != null)
+                //{
+                //    int count = map.resourceCounter.GetCount(tDef);
+                //    if (count > 0)
+                //    {
+                //        string text2 = count.ToStringCached();
+                //        Rect rect2 = new Rect(0f, tree.curY, tree.LabelWidth + num2, 40f);
+                //        Text.Font = GameFont.Small;
+                //        Text.Anchor = TextAnchor.UpperRight;
+                //        GUI.color = new Color(0.5f, 0.5f, 0.1f);
+                //        Widgets.Label(rect2, text2);
+                //        num2 -= Text.CalcSize(text2).x;
+                //        GenUI.ResetLabelAlign();
+                //        Text.Font = GameFont.Small;
+                //        GUI.color = Color.white;
+                //    }
+                //}
+
+                tree.LabelLeft(tDef.LabelCap, text, nestLevel, num2, color);
+                bool checkOn = tree.filter.Allows(tDef);
+                bool flag = checkOn;
+                Widgets.Checkbox(new Vector2(tree.LabelWidth, tree.curY), ref checkOn, tree.lineHeight, disabled: false, paintable: true);
+                if (checkOn != flag)
+                {
+                    tree.filter.SetAllow(tDef, checkOn);
+                }
+            }
+            tree.EndLine();
+        }
+
     }
 }

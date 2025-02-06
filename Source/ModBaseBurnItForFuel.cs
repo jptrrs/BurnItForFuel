@@ -78,7 +78,7 @@ namespace BurnItForFuel
             if (Fuels.Value == null) Fuels.Value = new FuelSettingsHandle();
             if (!HasEverBeenSet) SetDefaultFuelsOnce();
             Fuels.CustomDrawerHeight = 320f;
-            Fuels.CustomDrawer = rect => SettingsUI.CustomDrawer_ThingFilter(rect, ref Fuels.Value.masterFuelSettings, PossibleFuels, Fuels.Value.masterFuelSettings, Fuels);
+            Fuels.CustomDrawer = rect => SettingsUI.CustomDrawer_ThingFilter(rect, Fuels.Value.masterFuelSettings, PossibleFuels, Fuels.Value.masterFuelSettings, Fuels);
             AccessTools.Method(typeof(DefDatabase<ThingDef>), "Remove").Invoke(this, new object[] { ThingDef.Named("BurnItForFuel") });
         }
 

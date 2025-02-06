@@ -7,13 +7,13 @@
     <building>
       <fixedStorageSettings>
         <filter>
-          <categories>
+          <!--<categories>
             <li>Textiles</li>
             <li>PlantMatter</li>
-          </categories>
+          </categories>-->
           <thingDefs>
             <li>WoodLog</li>
-            <li>Chemfuel</li>
+            <!--<li>Chemfuel</li>-->
           </thingDefs>
           <specialFiltersToDisallow>
             <li>AllowCorpsesColonist</li>

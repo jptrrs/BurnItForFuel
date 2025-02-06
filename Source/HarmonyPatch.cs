@@ -31,7 +31,6 @@ namespace BurnItForFuel
                 prefix: null, postfix: new HarmonyMethod(patchType, nameof(GetFuelCountToFullyRefuel_Postfix)), transpiler: null);
 
         }
-
         public static void CanRefuel_Postfix(object __instance, Pawn pawn, Thing t, bool forced, ref bool __result)
         {
             if (t.TryGetComp<CompSelectFuel>() != null)
@@ -86,7 +85,6 @@ namespace BurnItForFuel
 
         private static Thing FindBestFuel(Pawn pawn, Thing refuelable)
         {
-            //Log.Message("FindBestFuel_Postfix for: "+refuelable);
             ThingFilter filter = new ThingFilter();
             filter = refuelable.TryGetComp<CompSelectFuel>().FuelSettings.filter;
             Predicate<Thing> predicate = (Thing x) => !x.IsForbidden(pawn) && pawn.CanReserve(x, 1, -1, null, false) && filter.Allows(x);
@@ -126,29 +124,17 @@ namespace BurnItForFuel
                 for (int i = 0; i < list.Count; i++)
                 {
                     Thing thing = list[i];
-                    if (validator(thing))
+                    if (validator(thing) && !chosenThings.Contains(thing) && ReachabilityWithinRegion.ThingFromRegionListerReachable(thing, r, PathEndMode.ClosestTouch, pawn))
                     {
-                        if (!chosenThings.Contains(thing))
-                        {
-                            if (ReachabilityWithinRegion.ThingFromRegionListerReachable(thing, r, PathEndMode.ClosestTouch, pawn))
-                            {
-                                chosenThings.Add(thing);
-                                accumulatedQuantity += thing.stackCount;
-                                if (accumulatedQuantity >= quantity)
-                                {
-                                    return true;
-                                }
-                            }
-                        }
+                        chosenThings.Add(thing);
+                        accumulatedQuantity += thing.stackCount;
+                        if (accumulatedQuantity >= quantity) return true;
                     }
                 }
                 return false;
             };
             RegionTraverser.BreadthFirstTraverse(region, entryCondition, regionProcessor, 99999, RegionType.Set_Passable);
-            if (accumulatedQuantity >= quantity)
-            {
-                return chosenThings;
-            }
+            if (accumulatedQuantity >= quantity) return chosenThings;
             return null;
         }
 
