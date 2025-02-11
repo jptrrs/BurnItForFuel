@@ -7,8 +7,8 @@
     <building>
       <fixedStorageSettings>
         <filter>
-          <!--<categories>
-            <li>Textiles</li>
+          <categories/>
+            <!--<li>Textiles</li>
             <li>PlantMatter</li>
           </categories>-->
           <thingDefs>
