@@ -112,7 +112,7 @@ namespace BurnItForFuel
         {
             get
             {
-                Log.Message("FuelSettingsIncludeBaseFuel called");
+                //Log.Message("FuelSettingsIncludeBaseFuel called");
                 if (fuelSettingsIncludeBaseFuel != null || BaseFuelSettings == null) return fuelSettingsIncludeBaseFuel.Value;
                 foreach (ThingDef thingDef in BaseFuelSettings.AllowedThingDefs)
                 {
@@ -151,7 +151,7 @@ namespace BurnItForFuel
         {
             get 
             {
-                Log.Message("BaseFuelSettings called");
+                //Log.Message("BaseFuelSettings called");
                 if (baseFuelSettings != null) return baseFuelSettings;
                 if (parent.def.comps != null)
                 {
