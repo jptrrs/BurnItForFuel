@@ -19,7 +19,7 @@ namespace BurnItForFuel
 
         public ModBaseBurnItForFuel()
         {
-            Settings.EntryName = "Burn It For Fuel";
+            BurnItForFuelSettings.EntryName = "Burn It For Fuel";
         }
 
         public static ThingFilter PossibleFuels
@@ -72,9 +72,9 @@ namespace BurnItForFuel
 
         public override void DefsLoaded()
         {
-            HasEverBeenSet = Settings.GetHandle<bool>("HasEverBeenSet", null, null, false);
+            HasEverBeenSet = BurnItForFuelSettings.GetHandle<bool>("HasEverBeenSet", null, null, false);
             HasEverBeenSet.NeverVisible = true;
-            Fuels = Settings.GetHandle<FuelSettingsHandle>("FuelSettings", "", null, null);
+            Fuels = BurnItForFuelSettings.GetHandle<FuelSettingsHandle>("FuelSettings", "", null, null);
             if (Fuels.Value == null) Fuels.Value = new FuelSettingsHandle();
             if (!HasEverBeenSet) SetDefaultFuelsOnce();
             Fuels.CustomDrawerHeight = 320f;

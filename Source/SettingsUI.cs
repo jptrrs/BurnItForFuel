@@ -1,16 +1,10 @@
 ﻿using HarmonyLib;
-using HugsLib.Settings;
 using RimWorld;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.Playables;
 using Verse;
-using Verse.Noise;
 using Verse.Sound;
-using static BurnItForFuel.ModBaseBurnItForFuel;
 
 namespace BurnItForFuel
 {
@@ -19,27 +13,23 @@ namespace BurnItForFuel
         private static MethodInfo DoCategoryChildrenInfo = AccessTools.Method(typeof(Listing_TreeThingFilter), nameof(Listing_TreeThingFilter.DoCategoryChildren));
         private static ThingFilterUI.UIState thingFilterState = new ThingFilterUI.UIState();
 
-        public static bool CustomDrawer_ThingFilter(Rect rect, ThingFilter filter, ThingFilter parentfilter, ThingFilter defaultFilter, SettingHandle<FuelSettingsHandle> fuels)
+        public static bool CustomDrawer_ThingFilter(Rect rect, ThingFilter filter, ThingFilter parentfilter/*, ThingFilter defaultFilter, SettingHandle<FuelSettingsHandle> fuels*/)
         {
+            Log.Message($"CustomDrawer_ThingFilter called with rect: {rect} and filter: {filter}");
             Rect labelRect = new Rect(rect);
             labelRect.width -= 20f;
             labelRect.position = new Vector2(labelRect.position.x - rect.width, labelRect.position.y);
             Text.Anchor = TextAnchor.UpperLeft;
             if (Current.ProgramState != ProgramState.Playing)
             {
-                Widgets.Label(labelRect, "Start or load a game.".Translate());
+                DoThingFilterConfigWindow(rect, thingFilterState, ref filter, parentfilter);
+                //Widgets.Label(labelRect, "Start or load a game.".Translate());
             }
             else
             {
                 ThingFilterUI.DoThingFilterConfigWindow(rect, thingFilterState, filter, parentfilter, 1, null, DefDatabase<SpecialThingFilterDef>.AllDefs);
-
-                //else
-                //{
-                //    DoThingFilterConfigWindow(rect, thingFilterState, ref filter, parentfilter);
-                //}
-
                 Widgets.Label(labelRect, "FuelSettingsNote".Translate());
-                fuels.HasUnsavedChanges = true;
+                //fuels.HasUnsavedChanges = true;
             }
             return true;
         }

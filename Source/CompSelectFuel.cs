@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Verse;
-using HugsLib;
-using HugsLib.Settings;
-using static BurnItForFuel.ModBaseBurnItForFuel;
+//using HugsLib;
+//using HugsLib.Settings;
+//using static BurnItForFuel.ModBaseBurnItForFuel;
 
 namespace BurnItForFuel
 {
@@ -172,9 +172,9 @@ namespace BurnItForFuel
 
         private static ThingFilter UserFuelSettings()
         {
-            ModSettingsPack pack = HugsLibController.SettingsManager.GetModSettings("JPT_BurnItForFuel");
-            return pack.GetHandle<FuelSettingsHandle>("FuelSettings").Value.masterFuelSettings;
-            //return Fuels.Value.masterFuelSettings;
+            return null;
+            //ModSettingsPack pack = HugsLibController.SettingsManager.GetModSettings("JPT_BurnItForFuel");
+            //return pack.GetHandle<FuelSettingsHandle>("FuelSettings").Value.masterFuelSettings;
         }
 
         private bool IsVehicle()

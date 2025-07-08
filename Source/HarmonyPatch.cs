@@ -16,6 +16,7 @@ namespace BurnItForFuel
 
         static HarmonyPatches()
         {
+            //Harmony.DEBUG = true;
             var harmonyInstance = new Harmony("JPT_BurnItForFuel");
 
             harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "CanRefuel"),
@@ -31,6 +32,7 @@ namespace BurnItForFuel
                 prefix: null, postfix: new HarmonyMethod(patchType, nameof(GetFuelCountToFullyRefuel_Postfix)), transpiler: null);
 
         }
+
         public static void CanRefuel_Postfix(object __instance, Pawn pawn, Thing t, bool forced, ref bool __result)
         {
             if (t.TryGetComp<CompSelectFuel>() != null)

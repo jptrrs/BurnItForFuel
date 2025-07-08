@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35527.113 d17.12
+VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BurnItForFuel", "Source\BurnItForFuel.csproj", "{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}"
 EndProject
@@ -17,11 +17,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Defs", "Defs", "{85220F84-E
 		Defs\Things.xml = Defs\Things.xml
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UpdateFeatureDefs", "UpdateFeatureDefs", "{B8498E3C-0226-4792-8CBE-898743AEFF23}"
-	ProjectSection(SolutionItems) = preProject
-		Defs\UpdateFeatureDefs\UpdateFeatures.xml = Defs\UpdateFeatureDefs\UpdateFeatures.xml
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Patches", "Patches", "{C55FC355-7C68-4DEA-A505-3CB02E318AF1}"
 	ProjectSection(SolutionItems) = preProject
 		Patches\Patches.xml = Patches\Patches.xml
@@ -34,12 +29,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Textures", "Textures", "{E94CE708-A59A-4698-8F07-187782D9EA9B}"
 	ProjectSection(SolutionItems) = preProject
 		Textures\update1.png = Textures\update1.png
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "News", "News", "{04850F19-967E-4876-94D7-2C3582684C05}"
-	ProjectSection(SolutionItems) = preProject
-		News\BurnItForFuel_UpdateFeatures.xml = News\BurnItForFuel_UpdateFeatures.xml
-		News\update1.png = News\update1.png
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Languages", "Languages", "{7D359395-B8C5-4791-9350-58CF4B602665}"
@@ -107,6 +96,7 @@ Global
 		1.3|Any CPU = 1.3|Any CPU
 		1.4|Any CPU = 1.4|Any CPU
 		1.5|Any CPU = 1.5|Any CPU
+		1.6|Any CPU = 1.6|Any CPU
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
@@ -121,6 +111,8 @@ Global
 		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.1.4|Any CPU.Build.0 = 1.4|Any CPU
 		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.1.5|Any CPU.ActiveCfg = 1.5|Any CPU
 		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.1.5|Any CPU.Build.0 = 1.5|Any CPU
+		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.1.6|Any CPU.ActiveCfg = 1.6|Any CPU
+		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.1.6|Any CPU.Build.0 = 1.6|Any CPU
 		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{54DE4FF0-6C41-4DF7-8EAE-278D9BAEA92B}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -130,7 +122,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{B8498E3C-0226-4792-8CBE-898743AEFF23} = {85220F84-E60F-4C88-B442-F315F3700E6D}
 		{8C0FC213-A06E-4DE1-BED6-BE5F62B447D2} = {7D359395-B8C5-4791-9350-58CF4B602665}
 		{0C9A059B-4CF9-47F9-AD3F-3A6CBDA8D530} = {8C0FC213-A06E-4DE1-BED6-BE5F62B447D2}
 		{74D339D4-7705-4422-BDC2-B5C7C1FA0283} = {0C9A059B-4CF9-47F9-AD3F-3A6CBDA8D530}
