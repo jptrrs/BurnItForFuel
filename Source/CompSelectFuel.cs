@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Verse;
-//using HugsLib;
-//using HugsLib.Settings;
-//using static BurnItForFuel.ModBaseBurnItForFuel;
 
 namespace BurnItForFuel
 {
@@ -22,6 +19,8 @@ namespace BurnItForFuel
         }
 
         public bool StorageTabVisible { get; set; }
+        
+        private ThingFilter UserFuelSettings => BurnItForFuelMod.settings.masterFuelSettings;
 
         public override IEnumerable<Gizmo> CompGetGizmosExtra()
         {
@@ -35,7 +34,7 @@ namespace BurnItForFuel
         public StorageSettings GetParentStoreSettings()
         {
             StorageSettings settings = new StorageSettings();
-            if (StorageTabVisible) settings.filter = UserFuelSettings();
+            if (StorageTabVisible) settings.filter = UserFuelSettings;
             else settings.filter = BaseFuelSettings;
             return settings;
         }
@@ -66,7 +65,7 @@ namespace BurnItForFuel
                     if (IsVehicle()) Log.Message("[BurnItForFuel] " + parent.LabelCap + " looks like its a vehicle, so we're preventing fuel mixing to protect your engines. Fuel tab disabled. Add <atomicFueling>true</atomicFueling> to its CompProperties_Refuelable to prevent this.");
                     FuelSettings.filter.SetAllowAll(BaseFuelSettings);
                 }
-                else foreach (ThingDef thingDef in UserFuelSettings().AllowedThingDefs)
+                else foreach (ThingDef thingDef in UserFuelSettings.AllowedThingDefs)
                 {
                     FuelSettings.filter.SetAllow(thingDef, true);
                 }
@@ -107,16 +106,15 @@ namespace BurnItForFuel
         }
 
         private bool? fuelSettingsIncludeBaseFuel;
-
+        
         public bool FuelSettingsIncludeBaseFuel //e.g: Dubs Hygiene Burning Pit doesn't. 
         {
             get
             {
-                //Log.Message("FuelSettingsIncludeBaseFuel called");
                 if (fuelSettingsIncludeBaseFuel != null || BaseFuelSettings == null) return fuelSettingsIncludeBaseFuel.Value;
                 foreach (ThingDef thingDef in BaseFuelSettings.AllowedThingDefs)
                 {
-                    if (UserFuelSettings().Allows(thingDef))
+                    if (UserFuelSettings.Allows(thingDef))
                     {
                         fuelSettingsIncludeBaseFuel = true;
                         return true;
@@ -151,7 +149,6 @@ namespace BurnItForFuel
         {
             get 
             {
-                //Log.Message("BaseFuelSettings called");
                 if (baseFuelSettings != null) return baseFuelSettings;
                 if (parent.def.comps != null)
                 {
@@ -161,6 +158,11 @@ namespace BurnItForFuel
                         if (comps[i].compClass == typeof(CompRefuelable))
                         {
                             CompProperties_Refuelable comp = (CompProperties_Refuelable)comps[i];
+                            if (comp.fuelFilter == null)
+                            {
+                                Log.Warning("[BurnItForFuel] " + parent.LabelCap + " has a CompRefuelable, but it doesn't have a fuel filter set. This will cause issues with fuel selection.");
+                                return null;
+                            }
                             baseFuelSettings = comp.fuelFilter;
                             return baseFuelSettings;
                         }
@@ -168,13 +170,6 @@ namespace BurnItForFuel
                 }
                 return null;
             }
-        }
-
-        private static ThingFilter UserFuelSettings()
-        {
-            return null;
-            //ModSettingsPack pack = HugsLibController.SettingsManager.GetModSettings("JPT_BurnItForFuel");
-            //return pack.GetHandle<FuelSettingsHandle>("FuelSettings").Value.masterFuelSettings;
         }
 
         private bool IsVehicle()

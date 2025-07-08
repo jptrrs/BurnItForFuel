@@ -82,6 +82,7 @@ namespace BurnItForFuel
             AccessTools.Method(typeof(DefDatabase<ThingDef>), "Remove").Invoke(this, new object[] { ThingDef.Named("BurnItForFuel") });
         }
 
+        //This still needs porting!
         public override void SettingsChanged()
         {
             base.SettingsChanged();

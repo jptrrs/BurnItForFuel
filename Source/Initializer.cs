@@ -30,7 +30,6 @@ namespace BurnItForFuel
                 errorMsg.Append("[BurnItForFuel] No fuels have been set by default.");
                 goto error;
             }
-            Log.Message("[BurnItForFuel] Populating fuel settings for the first time. Default fuels: " + filter.categories.ToStringSafeEnumerable() + ". Default fuel categories: " + filter.AllowedThingDefs.ToStringSafeEnumerable() + ".");
             settings.masterFuelSettings = filter;
             settings.HasEverBeenSet = true;
             return;
