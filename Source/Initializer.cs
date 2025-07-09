@@ -48,13 +48,17 @@ namespace BurnItForFuel
         {
             foreach (var def in DefDatabase<ThingDef>.AllDefs.Where(x => x.HasComp(typeof(CompRefuelable))))
             {
-                Log.Message("[BurnItForFuel] Adding CompSelectFuel to " + def.defName);
                 def.comps.Add(new CompProperties_SelectFuel());
                 if (def.inspectorTabs == null) def.inspectorTabs = new List<Type>();
                 def.inspectorTabs.Add(typeof(ITab_Fuel));
-                //if (def.inspectorTabsResolved == null) def.inspectorTabsResolved = new List<InspectTabBase>();
-                //def.inspectorTabsResolved.Add(InspectTabManager.GetSharedInstance(typeof(ITab_Fuel)));
+                TweakRefuelable(def.GetCompProperties<CompProperties_Refuelable>());
             }
         }
-    }
+
+        private static void TweakRefuelable(CompProperties_Refuelable fuelcomp)
+        {
+            fuelcomp.targetFuelLevelConfigurable = true;
+            fuelcomp.canEjectFuel = true;
+        }
+ le   }
 }
