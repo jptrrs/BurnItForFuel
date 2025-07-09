@@ -62,7 +62,7 @@ namespace BurnItForFuel
             }
             ThingFilter fuelFilter = new ThingFilter();
             CompSelectFuel comp = t.TryGetComp<CompSelectFuel>();
-            comp.PurgeFuelSettings();
+            comp.PurgeFuelSettings(); //Can we improve this so it's called only when necessary?
             fuelFilter = comp.FuelSettings.filter;
             if (FindBestFuel(pawn, t) == null)
             {
