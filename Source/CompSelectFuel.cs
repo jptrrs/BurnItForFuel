@@ -9,6 +9,26 @@ namespace BurnItForFuel
     public class CompSelectFuel : ThingComp, IStoreSettingsParent
     {
         public StorageSettings FuelSettings;
+        private ThingFilter baseFuelSettings;
+        private bool? fuelSettingsIncludeBaseFuel;
+
+        public bool FuelSettingsIncludeBaseFuel //e.g: Dubs Hygiene Burning Pit doesn't. 
+        {
+            get
+            {
+                if (fuelSettingsIncludeBaseFuel != null || BaseFuelSettings == null) return fuelSettingsIncludeBaseFuel.Value;
+                foreach (ThingDef thingDef in BaseFuelSettings.AllowedThingDefs)
+                {
+                    if (UserFuelSettings.Allows(thingDef))
+                    {
+                        fuelSettingsIncludeBaseFuel = true;
+                        return true;
+                    }
+                }
+                fuelSettingsIncludeBaseFuel = false;
+                return false;
+            }
+        }
 
         public CompProperties_SelectFuel Props
         {
@@ -19,7 +39,34 @@ namespace BurnItForFuel
         }
 
         public bool StorageTabVisible { get; set; }
-        
+
+        private ThingFilter BaseFuelSettings
+        {
+            get
+            {
+                if (baseFuelSettings != null) return baseFuelSettings;
+                if (parent.def.comps != null)
+                {
+                    List<CompProperties> comps = parent.def.comps;
+                    for (int i = 0; i < comps.Count; i++)
+                    {
+                        if (comps[i].compClass == typeof(CompRefuelable))
+                        {
+                            CompProperties_Refuelable comp = (CompProperties_Refuelable)comps[i];
+                            if (comp.fuelFilter == null)
+                            {
+                                Log.Warning("[BurnItForFuel] " + parent.LabelCap + " has a CompRefuelable, but it doesn't have a fuel filter set. This will cause issues with fuel selection.");
+                                return null;
+                            }
+                            baseFuelSettings = comp.fuelFilter;
+                            return baseFuelSettings;
+                        }
+                    }
+                }
+                return null;
+            }
+        }
+
         private ThingFilter UserFuelSettings => BurnItForFuelMod.settings.masterFuelSettings;
 
         public override IEnumerable<Gizmo> CompGetGizmosExtra()
@@ -51,25 +98,8 @@ namespace BurnItForFuel
             SetUpFuelMixing();
         }
 
-        public void SetupFuelSettings()
+        public void Notify_SettingsChanged()
         {
-            FuelSettings = new StorageSettings(this);
-            if (BaseFuelSettings != null)
-            {
-                if ((!FuelSettingsIncludeBaseFuel || IsVehicle()) && !parent.def.GetCompProperties<CompProperties_Refuelable>().atomicFueling)
-                {
-                    if (!FuelSettingsIncludeBaseFuel) 
-                    { 
-                        Log.Message("[BurnItForFuel] " + BaseFuelSettings.ToString() + " is used by the " + parent.Label + ", but it isn't marked as fuel. Fuel tab disabled. Change the settings or add <atomicFueling>true</atomicFueling> to its CompProperties_Refuelable to prevent this.");
-                    }
-                    if (IsVehicle()) Log.Message("[BurnItForFuel] " + parent.LabelCap + " looks like its a vehicle, so we're preventing fuel mixing to protect your engines. Fuel tab disabled. Add <atomicFueling>true</atomicFueling> to its CompProperties_Refuelable to prevent this.");
-                    FuelSettings.filter.SetAllowAll(BaseFuelSettings);
-                }
-                else foreach (ThingDef thingDef in UserFuelSettings.AllowedThingDefs)
-                {
-                    FuelSettings.filter.SetAllow(thingDef, true);
-                }
-            }
         }
 
         public override void PostExposeData()
@@ -105,26 +135,26 @@ namespace BurnItForFuel
             else StorageTabVisible = false;
         }
 
-        private bool? fuelSettingsIncludeBaseFuel;
-        
-        public bool FuelSettingsIncludeBaseFuel //e.g: Dubs Hygiene Burning Pit doesn't. 
+        public void SetupFuelSettings()
         {
-            get
+            FuelSettings = new StorageSettings(this);
+            if (BaseFuelSettings != null)
             {
-                if (fuelSettingsIncludeBaseFuel != null || BaseFuelSettings == null) return fuelSettingsIncludeBaseFuel.Value;
-                foreach (ThingDef thingDef in BaseFuelSettings.AllowedThingDefs)
+                if ((!FuelSettingsIncludeBaseFuel || IsVehicle()) && !parent.def.GetCompProperties<CompProperties_Refuelable>().atomicFueling)
                 {
-                    if (UserFuelSettings.Allows(thingDef))
-                    {
-                        fuelSettingsIncludeBaseFuel = true;
-                        return true;
+                    if (!FuelSettingsIncludeBaseFuel) 
+                    { 
+                        Log.Message("[BurnItForFuel] " + BaseFuelSettings.ToString() + " is used by the " + parent.Label + ", but it isn't marked as fuel. Fuel tab disabled. Change the settings or add <atomicFueling>true</atomicFueling> to its CompProperties_Refuelable to prevent this.");
                     }
+                    if (IsVehicle()) Log.Message("[BurnItForFuel] " + parent.LabelCap + " looks like its a vehicle, so we're preventing fuel mixing to protect your engines. Fuel tab disabled. Add <atomicFueling>true</atomicFueling> to its CompProperties_Refuelable to prevent this.");
+                    FuelSettings.filter.SetAllowAll(BaseFuelSettings);
                 }
-                fuelSettingsIncludeBaseFuel = false;
-                return false;
+                else foreach (ThingDef thingDef in UserFuelSettings.AllowedThingDefs)
+                {
+                    FuelSettings.filter.SetAllow(thingDef, true);
+                }
             }
         }
-
         public void ValidateFuelSettings()
         {
             if (Scribe.mode == LoadSaveMode.Inactive)
@@ -142,36 +172,6 @@ namespace BurnItForFuel
                 }
             }
         }
-
-        private ThingFilter baseFuelSettings;
-
-        private ThingFilter BaseFuelSettings
-        {
-            get 
-            {
-                if (baseFuelSettings != null) return baseFuelSettings;
-                if (parent.def.comps != null)
-                {
-                    List<CompProperties> comps = parent.def.comps;
-                    for (int i = 0; i < comps.Count; i++)
-                    {
-                        if (comps[i].compClass == typeof(CompRefuelable))
-                        {
-                            CompProperties_Refuelable comp = (CompProperties_Refuelable)comps[i];
-                            if (comp.fuelFilter == null)
-                            {
-                                Log.Warning("[BurnItForFuel] " + parent.LabelCap + " has a CompRefuelable, but it doesn't have a fuel filter set. This will cause issues with fuel selection.");
-                                return null;
-                            }
-                            baseFuelSettings = comp.fuelFilter;
-                            return baseFuelSettings;
-                        }
-                    }
-                }
-                return null;
-            }
-        }
-
         private bool IsVehicle()
         {
             CompProperties_Refuelable props = parent.TryGetComp<CompRefuelable>().Props;
@@ -181,10 +181,6 @@ namespace BurnItForFuel
         private bool SafeToMixFuels()
         {
             return FuelSettingsIncludeBaseFuel && parent.def.passability != Traversability.Impassable && !parent.def.building.canPlaceOverWall && !IsVehicle();
-        }
-
-        public void Notify_SettingsChanged()
-        {
         }
     }
 }

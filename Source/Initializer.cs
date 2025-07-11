@@ -60,5 +60,5 @@ namespace BurnItForFuel
             fuelcomp.targetFuelLevelConfigurable = true;
             fuelcomp.canEjectFuel = true;
         }
- le   }
+    }
 }
