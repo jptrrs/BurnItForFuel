@@ -11,6 +11,27 @@ namespace BurnItForFuel
         public StorageSettings FuelSettings;
         private ThingFilter baseFuelSettings;
         private bool? fuelSettingsIncludeBaseFuel;
+        private float baseFuelValue;
+
+        public float BaseFuelValue
+        {
+            get
+            {
+                if (baseFuelValue != 0f) return baseFuelValue;
+                if (BaseFuelSettings == null || BaseFuelSettings.AllowedThingDefs.EnumerableNullOrEmpty())
+                {
+                    Log.Message($"[BurnItForFuel] Base fuel for {parent.LabelCap} is undefined!");
+                    return 0f;
+                }
+                baseFuelValue = BaseFuelSettings.AllowedThingDefs.Select(t => t.UnitFuelValue()).Min();
+                return baseFuelValue;
+            }
+        }
+
+        public float EquivalentFuelFactor(ThingDef def)
+        {
+            return def.UnitFuelValue() / BaseFuelValue;
+        }
 
         public bool FuelSettingsIncludeBaseFuel //e.g: Dubs Hygiene Burning Pit doesn't. 
         {
@@ -172,6 +193,7 @@ namespace BurnItForFuel
                 }
             }
         }
+
         private bool IsVehicle()
         {
             CompProperties_Refuelable props = parent.TryGetComp<CompRefuelable>().Props;
@@ -182,5 +204,7 @@ namespace BurnItForFuel
         {
             return FuelSettingsIncludeBaseFuel && parent.def.passability != Traversability.Impassable && !parent.def.building.canPlaceOverWall && !IsVehicle();
         }
+
+
     }
 }

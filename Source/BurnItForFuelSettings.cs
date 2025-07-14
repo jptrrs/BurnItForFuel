@@ -12,7 +12,7 @@ namespace BurnItForFuel
             if (Scribe.mode.HasFlag(LoadSaveMode.PostLoadInit | LoadSaveMode.Saving))
             {
                 Scribe_Values.Look(ref HasEverBeenSet, "HasEverBeenSet");
-                Scribe_Deep.Look(ref masterFuelSettings, "masterFuelSettings");
+                Scribe_Values.Look(ref masterFuelSettings, "masterFuelSettings");
             }
             base.ExposeData();
         }

@@ -8,6 +8,7 @@ using System.Reflection.Emit;
 using UnityEngine;
 using Verse;
 using Verse.AI;
+using Verse.Noise;
 
 namespace BurnItForFuel
 {
@@ -27,18 +28,17 @@ namespace BurnItForFuel
             //harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "FindBestFuel"),
             //    prefix: null, postfix: new HarmonyMethod(patchType, nameof(FindBestFuel_Postfix)), transpiler: null);
 
-            //harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "FindAllFuel"),
-            //    prefix: null, postfix: new HarmonyMethod(patchType, nameof(FindAllFuel_Postfix)), transpiler: null);
+            harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), nameof(RefuelWorkGiverUtility.FindAllFuel)),
+                new HarmonyMethod(patchType, nameof(FindAllFuel_Prefix)));
 
-            //harmonyInstance.Patch(original: AccessTools.Method(typeof(CompRefuelable), name: "GetFuelCountToFullyRefuel"),
-            //    null, new HarmonyMethod(patchType, nameof(GetFuelCountToFullyRefuel_Postfix)));
+            harmonyInstance.Patch(AccessTools.Method(typeof(CompRefuelable), nameof(CompRefuelable.GetFuelCountToFullyRefuel)),
+                new HarmonyMethod(patchType, nameof(GetFuelCountToFullyRefuel_Prefix)));
 
             //test
-            harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "FindAllFuel"),
-                null, null, new HarmonyMethod(patchType, nameof(FuelFilter_Transpiler)));
+            //harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "FindAllFuel"),
+            //    null, null, new HarmonyMethod(patchType, nameof(FuelFilter_Transpiler)));
             harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "FindBestFuel"),
                 null, null, new HarmonyMethod(patchType, nameof(FuelFilter_Transpiler)));
-
 
         }
 
@@ -119,13 +119,24 @@ namespace BurnItForFuel
         //    return GenClosest.ClosestThingReachable(position, map, bestThingRequest, peMode, traverseParams, 9999f, validator, null, 0, -1, false, RegionType.Set_Passable, false);
         //}
 
-        //public static void FindAllFuel_Postfix(Pawn pawn, Thing refuelable, ref List<Thing> __result, MethodInfo __originalMethod)
-        //{
-        //    if (refuelable.TryGetComp<CompSelectFuel>() != null)
-        //    {
-        //        __result = FindAllFuel(pawn, refuelable);
-        //    }
-        //}
+        public static bool FindAllFuel_Prefix(Pawn pawn, Thing refuelable, ref List<Thing> __result, MethodInfo __originalMethod)
+        {
+            if (refuelable.TryGetComp<CompSelectFuel>() == null)
+            {
+                Log.WarningOnce($"[BurnItForFuel] Failed when looking CompSelectFuel for {refuelable.LabelCap}. Proceeding with base fuel only.",1);
+                return true;
+            }
+            __result = FindAllFuel(pawn, refuelable);
+            return false;
+        }
+
+        private static List<Thing> FindAllFuel(Pawn pawn, Thing refuelable)
+        {
+            int fuelCountToFullyRefuel = refuelable.TryGetComp<CompRefuelable>().GetFuelCountToFullyRefuel();
+            var compSelectFuel = refuelable.TryGetComp<CompSelectFuel>();
+
+            return FindEnoughReservableThings(pawn, refuelable.Position, new IntRange(fuelCountToFullyRefuel, fuelCountToFullyRefuel), compSelectFuel);
+        }
 
         //private static List<Thing> FindAllFuel(Pawn pawn, Thing refuelable)
         //{
@@ -134,7 +145,7 @@ namespace BurnItForFuel
         //    ThingFilter filter = new ThingFilter();
         //    filter = refuelable.TryGetComp<CompSelectFuel>().FuelSettings.filter; //filter diverted to our own.
 
-        //    from here, doing the work of FindEnoughReservableThings:
+        //    //from here, doing the work of FindEnoughReservableThings:
         //    Predicate<Thing> validator = (Thing x) => !x.IsForbidden(pawn) && pawn.CanReserve(x, 1, -1, null, false) && filter.Allows(x);
         //    IntVec3 position = refuelable.Position;
         //    Region region = position.GetRegion(pawn.Map, RegionType.Set_Passable); // NOTE: comes out null if refuelable is inside a wall, even with matching RegionType. Why?
@@ -162,16 +173,17 @@ namespace BurnItForFuel
         //    return null;
         //}
 
-        //public static void GetFuelCountToFullyRefuel_Postfix(CompRefuelable __instance, ref int __result)
-        //{
-        //    __result = GetFuelCountToFullyRefuel(__instance);
-        //}
+        public static bool GetFuelCountToFullyRefuel_Prefix(CompRefuelable __instance, ref int __result)
+        {
+            __result = GetFuelCountToFullyRefuel(__instance);
+            return false;
+        }
 
-        //public static int GetFuelCountToFullyRefuel(CompRefuelable __instance) //skips measures for "atomicFueling"
-        //{
-        //    float f = (__instance.TargetFuelLevel - __instance.Fuel) / __instance.Props.FuelMultiplierCurrentDifficulty;
-        //    return Mathf.Max(Mathf.CeilToInt(f), 1);
-        //}
+        public static int GetFuelCountToFullyRefuel(CompRefuelable __instance) //skips measures for "atomicFueling" -- This is were we need to input fuel power calculation.
+        {
+            float f = (__instance.TargetFuelLevel - __instance.Fuel) / __instance.Props.FuelMultiplierCurrentDifficulty;
+            return Mathf.Max(Mathf.CeilToInt(f), 1);
+        }
 
         static IEnumerable<CodeInstruction> FuelFilter_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
@@ -215,6 +227,68 @@ namespace BurnItForFuel
         //    }
         //    foreach (var c in code) yield return c;
         //}
+
+        //Ideia:
+        //Já que GetFuelCountToFullyRefuel retorna a quantidade de combustivel padrão, podemos fazer a equivalência com outros combustíveis no momento em que a busca é feita, quando o item potencial é averiguado. Aparentemente, essa é a função de FindEnoughReservableThings. ThingListProcessor (nested) acumula o stackcount de cada item e compara com a desiredQuantity, que por sua vez se refere ao combustível padraõ.
+        public static List<Thing> FindEnoughReservableThings(Pawn pawn, IntVec3 rootCell, IntRange desiredQuantity, CompSelectFuel compSelectFuel)
+        {
+            Region region2 = rootCell.GetRegion(pawn.Map);
+            TraverseParms traverseParams = TraverseParms.For(pawn);
+            List<Thing> chosenThings = new List<Thing>();
+            int accumulatedQuantity = 0;
+            ThingListProcessor(rootCell.GetThingList(region2.Map), region2);
+            if (accumulatedQuantity < desiredQuantity.max)
+            {
+                RegionTraverser.BreadthFirstTraverse(region2, EntryCondition, RegionProcessor, 99999);
+            }
+
+            if (accumulatedQuantity >= desiredQuantity.min)
+            {
+                return chosenThings;
+            }
+
+            return null;
+            bool EntryCondition(Region from, Region r)
+            {
+                return r.Allows(traverseParams, isDestination: false);
+            }
+
+            bool RegionProcessor(Region r)
+            {
+                List<Thing> things2 = r.ListerThings.ThingsMatching(ThingRequest.ForGroup(ThingRequestGroup.HaulableEver));
+                return ThingListProcessor(things2, r);
+            }
+
+            bool ThingListProcessor(List<Thing> things, Region region)
+            {
+                for (int i = 0; i < things.Count; i++)
+                {
+                    Thing thing = things[i];
+                    if (Validator(thing) && !chosenThings.Contains(thing) && ReachabilityWithinRegion.ThingFromRegionListerReachable(thing, region, PathEndMode.ClosestTouch, pawn))
+                    {
+                        chosenThings.Add(thing);
+                        accumulatedQuantity += (int)(thing.stackCount * compSelectFuel.EquivalentFuelFactor(thing.def));
+                        if (accumulatedQuantity >= desiredQuantity.max) return true;
+                    }
+                }
+                return false;
+            }
+
+            bool Validator(Thing x)
+            {
+                if (x.Fogged() || x.IsForbidden(pawn) || !pawn.CanReserve(x))
+                {
+                    return false;
+                }
+
+                if (!compSelectFuel.FuelSettings.filter.Allows(x))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        }
 
     }
 }
