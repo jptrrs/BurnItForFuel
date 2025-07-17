@@ -43,7 +43,7 @@ namespace BurnItForFuel
         /// <param name="Rect">A Unity Rect with the size of the settings window.</param>
         public override void DoSettingsWindowContents(Rect Rect)
         {
-            SettingsUI.CustomDrawer_ThingFilter(Rect, settings.masterFuelSettings, PossibleFuels);
+            SettingsUI.CustomDrawer_ThingFilter(Rect, ref settings.masterFuelSettings, PossibleFuels);
 
             //Listing_Standard listingStandard = new Listing_Standard();
             //listingStandard.Begin(Rect);

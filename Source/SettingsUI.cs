@@ -13,9 +13,11 @@ namespace BurnItForFuel
         private static MethodInfo DoCategoryChildrenInfo = AccessTools.Method(typeof(Listing_TreeThingFilter), nameof(Listing_TreeThingFilter.DoCategoryChildren));
         private static ThingFilterUI.UIState thingFilterState = new ThingFilterUI.UIState();
 
-        public static bool CustomDrawer_ThingFilter(Rect rect, ThingFilter filter, ThingFilter parentfilter/*, ThingFilter defaultFilter, SettingHandle<FuelSettingsHandle> fuels*/)
+        public static bool CustomDrawer_ThingFilter(Rect rect, ref ThingFilter filter, ThingFilter parentfilter/*, ThingFilter defaultFilter, SettingHandle<FuelSettingsHandle> fuels*/)
         {
-            Log.Message($"CustomDrawer_ThingFilter called with rect: {rect} and filter: {filter}");
+            bool test = filter != null;
+            Log.Message($"CustomDrawer_ThingFilter called with rect: {rect} and filter is {test}");
+            if (!test) return false;
             Rect labelRect = new Rect(rect);
             labelRect.width -= 20f;
             labelRect.position = new Vector2(labelRect.position.x - rect.width, labelRect.position.y);
@@ -28,7 +30,7 @@ namespace BurnItForFuel
             else
             {
                 ThingFilterUI.DoThingFilterConfigWindow(rect, thingFilterState, filter, parentfilter, 1, null, DefDatabase<SpecialThingFilterDef>.AllDefs);
-                Widgets.Label(labelRect, "FuelSettingsNote".Translate());
+                //Widgets.Label(labelRect, "FuelSettingsNote".Translate());
                 //fuels.HasUnsavedChanges = true;
             }
             return true;

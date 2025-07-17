@@ -15,12 +15,13 @@ namespace BurnItForFuel
         static Initializer()
         {
             CompInjection();
-            if (!settings.HasEverBeenSet) SetDefaultFuelsOnce();
+            if (settings.InvalidSettings) SetDefaultFuelsOnce();
             DefDatabase<ThingDef>.Remove(ThingDef.Named("BurnItForFuel"));
         }
 
         private static void SetDefaultFuelsOnce()
         {
+            Log.Message($"[BurnItForFuel] Setting default fuels for the first time.");
             var filter = new ThingFilter();
             var defaultsDef = ThingDef.Named("BurnItForFuel");
             StringBuilder errorMsg = new StringBuilder();
@@ -36,7 +37,7 @@ namespace BurnItForFuel
                 goto error;
             }
             settings.masterFuelSettings = filter;
-            settings.HasEverBeenSet = true;
+            //settings.IsSet = true;
             return;
 
             error:
