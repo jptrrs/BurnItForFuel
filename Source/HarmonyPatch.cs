@@ -28,10 +28,10 @@ namespace BurnItForFuel
             //harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "FindBestFuel"),
             //    prefix: null, postfix: new HarmonyMethod(patchType, nameof(FindBestFuel_Postfix)), transpiler: null);
 
-            harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), nameof(RefuelWorkGiverUtility.FindAllFuel)),
+            harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "FindAllFuel"),
                 new HarmonyMethod(patchType, nameof(FindAllFuel_Prefix)));
 
-            harmonyInstance.Patch(AccessTools.Method(typeof(CompRefuelable), nameof(CompRefuelable.GetFuelCountToFullyRefuel)),
+            harmonyInstance.Patch(AccessTools.Method(typeof(CompRefuelable), "GetFuelCountToFullyRefuel"),
                 new HarmonyMethod(patchType, nameof(GetFuelCountToFullyRefuel_Prefix)));
 
             //test

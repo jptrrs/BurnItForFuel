@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Verse;
 
 namespace BurnItForFuel
@@ -6,24 +7,30 @@ namespace BurnItForFuel
     public class BurnItForFuelSettings : ModSettings
     {
         public ThingFilter masterFuelSettings;
+        public List<string> ExposedList = new List<string>();
 
         public override void ExposeData()
         {
-            if (Scribe.mode == LoadSaveMode.Saving || Scribe.mode == LoadSaveMode.PostLoadInit)
+            if (Scribe.mode == LoadSaveMode.Saving && masterFuelSettings != null)
             {
-                //Scribe_Deep.Look<ThingFilter>(ref masterFuelSettings, true, "masterFuelSettings", new object[] { this });
-                var fuels = masterFuelSettings?.AllowedThingDefs ?? new HashSet<ThingDef>();
-                //Scribe_Collections.Look(ref fuels, "masterFuelSettings");
-                if (masterFuelSettings == null)
+                ExposedList = masterFuelSettings.AllowedThingDefs.Select(x => x.defName).ToList();
+            }
+            Scribe_Collections.Look(ref ExposedList, "masterFuelSettings", LookMode.Value);
+            base.ExposeData();
+        }
+
+        public void DelayedLoading() //Apparently the DefDatabase wasn't ready before.
+        {
+            masterFuelSettings = new ThingFilter();
+            foreach (var e in ExposedList)
+            {
+                var def = DefDatabase<ThingDef>.GetNamed(e);
+                if (def != null)
                 {
-                    Log.Warning($"[BurnItForFuel] masterFuelSettings was null when exposed! scribe mode is {Scribe.mode}");
-                }
-                else
-                {
-                    Log.Message($"BurnItForFuelSettings: ExposeData called, scribe mode is {Scribe.mode}, master filter has {masterFuelSettings.AllowedDefCount} items.");
+                    masterFuelSettings.SetAllow(def, true);
                 }
             }
-            base.ExposeData();
+            ExposedList.Clear();
         }
     }
 }

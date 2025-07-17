@@ -14,6 +14,7 @@ namespace BurnItForFuel
 
         static Initializer()
         {
+            settings.DelayedLoading();
             CompInjection();
             if (settings.masterFuelSettings == null) SetDefaultFuelsOnce();
             DefDatabase<ThingDef>.Remove(ThingDef.Named("BurnItForFuel"));
