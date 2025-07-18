@@ -44,7 +44,6 @@ namespace BurnItForFuel
         public override void DoSettingsWindowContents(Rect Rect)
         {
             SettingsUI.CustomDrawer_ThingFilter(Rect, ref settings.masterFuelSettings, PossibleFuels);
-
             //Listing_Standard listingStandard = new Listing_Standard();
             //listingStandard.Begin(Rect);
             //listingStandard.CheckboxLabeled("exampleBoolExplanation", ref settings.exampleBool, "exampleBoolToolTip");

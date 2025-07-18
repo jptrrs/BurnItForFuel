@@ -68,7 +68,6 @@
     <Compile Include="BurnItForFuelSettings.cs" />
     <Compile Include="CompSelectFuel.cs" />
     <Compile Include="Initializer.cs" />
-    <None Include="ModBaseBurnItForFuel.cs" />
     <Compile Include="SelectFuelHelper.cs" />
     <Compile Include="SettingsUI.cs" />
   </ItemGroup>
