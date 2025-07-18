@@ -20,7 +20,7 @@ namespace BurnItForFuel
                 if (baseFuelValue != 0f) return baseFuelValue;
                 if (BaseFuelSettings == null || BaseFuelSettings.AllowedThingDefs.EnumerableNullOrEmpty())
                 {
-                    Log.Message($"[BurnItForFuel] Base fuel for {parent.LabelCap} is undefined!");
+                    Log.Warning($"[BurnItForFuel] Base fuel for {parent.LabelCap} is undefined!");
                     return 0f;
                 }
                 baseFuelValue = BaseFuelSettings.AllowedThingDefs.Select(t => t.UnitFuelValue()).Min();
@@ -30,7 +30,13 @@ namespace BurnItForFuel
 
         public float EquivalentFuelFactor(ThingDef def)
         {
-            return def.UnitFuelValue() / BaseFuelValue;
+            if (BaseFuelValue <= 0f)
+            {
+                Log.Error($"[BurnItForFuel] Invalid base fuel assigned to {parent.LabelCap}.");
+                return 0f;
+            }
+            var unitValue = def.UnitFuelValue();
+            return unitValue > 0 ? unitValue / BaseFuelValue : 0f;
         }
 
         public bool FuelSettingsIncludeBaseFuel //e.g: Dubs Hygiene Burning Pit doesn't. 

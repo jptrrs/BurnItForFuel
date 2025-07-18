@@ -22,8 +22,8 @@ namespace BurnItForFuel
             //Harmony.DEBUG = true;
             var harmonyInstance = new Harmony("JPT_BurnItForFuel");
 
-            //harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "CanRefuel"),
-            //    prefix: null, postfix: new HarmonyMethod(patchType, nameof(CanRefuel_Postfix)), transpiler: null);
+            harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "CanRefuel"),
+                prefix: null, postfix: new HarmonyMethod(patchType, nameof(CanRefuel_Postfix)), transpiler: null);
 
             //harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "FindBestFuel"),
             //    prefix: null, postfix: new HarmonyMethod(patchType, nameof(FindBestFuel_Postfix)), transpiler: null);
@@ -31,14 +31,14 @@ namespace BurnItForFuel
             harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "FindAllFuel"),
                 new HarmonyMethod(patchType, nameof(FindAllFuel_Prefix)));
 
-            harmonyInstance.Patch(AccessTools.Method(typeof(CompRefuelable), "GetFuelCountToFullyRefuel"),
-                new HarmonyMethod(patchType, nameof(GetFuelCountToFullyRefuel_Prefix)));
+            //harmonyInstance.Patch(AccessTools.Method(typeof(CompRefuelable), "GetFuelCountToFullyRefuel"),
+            //    new HarmonyMethod(patchType, nameof(GetFuelCountToFullyRefuel_Prefix)));
 
             //test
             //harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "FindAllFuel"),
-            //    null, null, new HarmonyMethod(patchType, nameof(FuelFilter_Transpiler)));
+            //    null, new HarmonyMethod(patchType, nameof(FindAllFuel_Postfix)), new HarmonyMethod(patchType, nameof(FuelFilter_Transpiler)));
             harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "FindBestFuel"),
-                null, null, new HarmonyMethod(patchType, nameof(FuelFilter_Transpiler)));
+                null, new HarmonyMethod(patchType, nameof(FindBestFuel_Postfix)), new HarmonyMethod(patchType, nameof(FuelFilter_Transpiler)));
 
         }
 
@@ -53,13 +53,10 @@ namespace BurnItForFuel
         //    return true;
         //}
 
-        //public static void CanRefuel_Postfix(object __instance, Pawn pawn, Thing t, bool forced, ref bool __result)
-        //{
-        //    if (t.TryGetComp<CompSelectFuel>() != null)
-        //    {
-        //        __result = CanRefuel(pawn, t, forced);
-        //    }
-        //}
+        public static void CanRefuel_Postfix(object __instance, Pawn pawn, Thing t, bool forced, ref bool __result)
+        {
+            Log.Message($"[BurnItForFuel] CanRefuel? {__result.ToStringYesNo()}.");
+        }
 
         //public static bool CanRefuel(Pawn pawn, Thing t, bool forced = false)
         //{
@@ -97,13 +94,10 @@ namespace BurnItForFuel
         //    return true;
         //}
 
-        //public static void FindBestFuel_Postfix(Pawn pawn, Thing refuelable, ref Thing __result)
-        //{
-        //    if (refuelable.TryGetComp<CompSelectFuel>() != null)
-        //    {
-        //        __result = FindBestFuel(pawn, refuelable);
-        //    }
-        //}
+        public static void FindBestFuel_Postfix(Pawn pawn, Thing refuelable, ref Thing __result)
+        {
+            Log.Message($"[BurnItForFuel] FindBestFuel returns {__result.Label}. Atomic? {refuelable.TryGetComp<CompRefuelable>().Props.atomicFueling}");
+        }
 
         //private static Thing FindBestFuel(Pawn pawn, Thing refuelable)
         //{
@@ -123,7 +117,7 @@ namespace BurnItForFuel
         {
             if (refuelable.TryGetComp<CompSelectFuel>() == null)
             {
-                Log.WarningOnce($"[BurnItForFuel] Failed when looking CompSelectFuel for {refuelable.LabelCap}. Proceeding with base fuel only.",1);
+                Log.WarningOnce($"[BurnItForFuel] Failed when looking CompSelectFuel for {refuelable.LabelCap}. Proceeding with base fuel only.", 1);
                 return true;
             }
             __result = FindAllFuel(pawn, refuelable);
@@ -134,8 +128,9 @@ namespace BurnItForFuel
         {
             int fuelCountToFullyRefuel = refuelable.TryGetComp<CompRefuelable>().GetFuelCountToFullyRefuel();
             var compSelectFuel = refuelable.TryGetComp<CompSelectFuel>();
-
-            return FindEnoughReservableThings(pawn, refuelable.Position, new IntRange(fuelCountToFullyRefuel, fuelCountToFullyRefuel), compSelectFuel);
+            List<Thing> result = FindEnoughReservableThings(pawn, refuelable.Position, new IntRange(fuelCountToFullyRefuel, fuelCountToFullyRefuel), compSelectFuel);
+            Log.Message($"[BurnItForFuel] diverted FindAllFuel returns {result.ToStringSafeEnumerable()}.");
+            return result;
         }
 
         //private static List<Thing> FindAllFuel(Pawn pawn, Thing refuelable)
@@ -173,17 +168,17 @@ namespace BurnItForFuel
         //    return null;
         //}
 
-        public static bool GetFuelCountToFullyRefuel_Prefix(CompRefuelable __instance, ref int __result)
-        {
-            __result = GetFuelCountToFullyRefuel(__instance);
-            return false;
-        }
+        //public static bool GetFuelCountToFullyRefuel_Prefix(CompRefuelable __instance, ref int __result)
+        //{
+        //    __result = GetFuelCountToFullyRefuel(__instance);
+        //    return false;
+        //}
 
-        public static int GetFuelCountToFullyRefuel(CompRefuelable __instance) //skips measures for "atomicFueling" -- This is were we need to input fuel power calculation.
-        {
-            float f = (__instance.TargetFuelLevel - __instance.Fuel) / __instance.Props.FuelMultiplierCurrentDifficulty;
-            return Mathf.Max(Mathf.CeilToInt(f), 1);
-        }
+        //public static int GetFuelCountToFullyRefuel(CompRefuelable __instance) //skips measures for "atomicFueling" -- This is were we need to input fuel power calculation.
+        //{
+        //    float f = (__instance.TargetFuelLevel - __instance.Fuel) / __instance.Props.FuelMultiplierCurrentDifficulty;
+        //    return Mathf.Max(Mathf.CeilToInt(f), 1);
+        //}
 
         static IEnumerable<CodeInstruction> FuelFilter_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
@@ -203,30 +198,6 @@ namespace BurnItForFuel
             }
             foreach (var c in code) yield return c;
         }
-
-        //static IEnumerable<CodeInstruction> FindBestFuel_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-        //{
-        //    List<CodeInstruction> code = instructions.ToList();
-        //    MethodInfo target = AccessTools.Method(typeof(ThingCompUtility), nameof(ThingCompUtility.TryGetComp), new Type[] { typeof(Thing) }, new Type[] { typeof(CompRefuelable) });
-        //    MethodInfo changeling = AccessTools.Method(typeof(ThingCompUtility), nameof(ThingCompUtility.TryGetComp), new Type[] { typeof(Thing) }, new Type[] { typeof(CompSelectFuel) });
-        //    FieldInfo fuelSettings = AccessTools.Field(typeof(CompSelectFuel), nameof(CompSelectFuel.FuelSettings));
-        //    FieldInfo filter = AccessTools.Field(typeof(StorageSettings), nameof(StorageSettings.filter));
-
-        //    for (int i = 0; i < code.Count; i++)
-        //    {
-        //        if (code[i].opcode == OpCodes.Call && (MethodInfo)code[i].operand == target)
-        //        {
-        //            code.RemoveAt(i); // TryGetComp<CompRefuelable>()
-        //            code.RemoveAt(i); // .Props
-        //            code.RemoveAt(i); // .fuelFilter
-        //            code.Insert(i , new CodeInstruction(OpCodes.Call, changeling));
-        //            code.Insert(i + 1, new CodeInstruction(OpCodes.Ldfld, fuelSettings));
-        //            code.Insert(i + 2, new CodeInstruction(OpCodes.Ldfld, filter));
-        //            break;
-        //        }
-        //    }
-        //    foreach (var c in code) yield return c;
-        //}
 
         //Ideia:
         //Já que GetFuelCountToFullyRefuel retorna a quantidade de combustivel padrão, podemos fazer a equivalência com outros combustíveis no momento em que a busca é feita, quando o item potencial é averiguado. Aparentemente, essa é a função de FindEnoughReservableThings. ThingListProcessor (nested) acumula o stackcount de cada item e compara com a desiredQuantity, que por sua vez se refere ao combustível padraõ.

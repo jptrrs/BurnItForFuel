@@ -11,14 +11,31 @@ namespace BurnItForFuel
         public static float UnitFuelValue(this ThingDef def)
         {
             if (fuelValueCache.ContainsKey(def)) return fuelValueCache[def];
+            string errorMsg;
             if (def.statBases == null)
             {
-                Log.Error($"[BurnItForFuel] {def.defName} has no stat bases, so it can't be used as fuel.");
-                return 0f;
+                errorMsg = "having no stat bases";
+                goto Zero;
             }
-            float fuelValue = def.GetStatValueAbstract(StatDefOf.Mass) * def.GetStatValueAbstract(StatDefOf.Flammability);
+            float flamm = def.GetStatValueAbstract(StatDefOf.Flammability);
+            if (flamm <= 0f)
+            {
+                errorMsg = "being inflammable";
+                goto Zero;
+            }
+            float mass = def.GetStatValueAbstract(StatDefOf.Mass);
+            if (mass <= 0f)
+            {
+                errorMsg = "having no mass";
+                goto Zero;
+            }
+            float fuelValue = mass * flamm;
             fuelValueCache.Add(def, fuelValue);
             return fuelValue;
+
+            Zero:
+            Log.Error($"[BurnItForFuel] {def.defName} can't be used as fuel due to {errorMsg}.");
+            return 0f;
         }
 
         public static float FuelEquivalenceRatio(ThingDef standard, ThingDef sample)
