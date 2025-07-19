@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using Verse;
 
 namespace BurnItForFuel
@@ -45,6 +46,18 @@ namespace BurnItForFuel
                     if (t is Building b) b.GetComp<CompSelectFuel>()?.ValidateFuelSettings();
                 }
             }
+        }
+
+        public bool CustomDrawer_ThingFilter(Rect rect, ref ThingFilter filter, ThingFilter parentfilter)
+        {
+            bool test = filter != null;
+            if (!test) return false;
+            Rect labelRect = new Rect(rect);
+            labelRect.width -= 20f;
+            labelRect.position = new Vector2(labelRect.position.x - rect.width, labelRect.position.y);
+            Text.Anchor = TextAnchor.UpperLeft;
+            ThingFilterUI.DoThingFilterConfigWindow(rect, new ThingFilterUI.UIState(), filter, parentfilter, 1, null, DefDatabase<SpecialThingFilterDef>.AllDefs);
+            return true;
         }
     }
 }

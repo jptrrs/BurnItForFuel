@@ -9,6 +9,7 @@ using UnityEngine;
 using Verse;
 using Verse.AI;
 using Verse.Noise;
+using static System.Net.UnsafeNclNativeMethods.HttpApi;
 
 namespace BurnItForFuel
 {
@@ -16,6 +17,7 @@ namespace BurnItForFuel
     public static class HarmonyPatches
     {
         private static readonly Type patchType = typeof(HarmonyPatches);
+        public static ThingDef TreeThingFilterLabelThingDef;
 
         static HarmonyPatches()
         {
@@ -37,6 +39,73 @@ namespace BurnItForFuel
                 null, null, new HarmonyMethod(patchType, nameof(HiddenItemsManager_Transpiler)));
             harmonyInstance.Patch(AccessTools.Method(typeof(QuickSearchFilter), nameof(QuickSearchFilter.Matches), new Type[] {typeof(ThingDef)}),
                 null, null, new HarmonyMethod(patchType, nameof(HiddenItemsManager_Transpiler)));
+
+            //Inserting a fuel power indicator for the tree filter thingy.
+            harmonyInstance.Patch(AccessTools.Method(typeof(Listing_TreeThingFilter), nameof(Listing_TreeThingFilter.DoThingDef)),
+                new HarmonyMethod(patchType, nameof(DoThingDef_Prefix)), new HarmonyMethod(patchType, nameof(DoThingDef_Postfix)));
+            harmonyInstance.Patch(AccessTools.Method(typeof(Listing_Tree), nameof(Listing_Tree.LabelLeft)),
+                new HarmonyMethod(patchType, nameof(LabelLeft_Prefix)));
+        }
+
+        public static void DoThingDef_Prefix(ThingDef tDef)
+        {
+            TreeThingFilterLabelThingDef = tDef;
+        }
+
+        public static void DoThingDef_Postfix(ThingDef tDef)
+        {
+            TreeThingFilterLabelThingDef = null;
+        }
+
+        public static void LabelLeft_Prefix(Listing_TreeThingFilter __instance, float widthOffset)
+        {
+            if (TreeThingFilterLabelThingDef != null)
+            {
+                float fuelValue;
+                string text = TryGetFuelCompAndlFactor(out fuelValue) ? fuelValue.ToStringPercent() : TreeThingFilterLabelThingDef.UnitFuelValue(false).ToString();
+                Rect rect = new Rect(0f, __instance.curY, __instance.LabelWidth + widthOffset, 40f);
+                Text.Font = GameFont.Small;
+                Text.Anchor = TextAnchor.UpperRight;
+                GUI.color = new Color(0.5f, 0.5f, 0.1f);
+                Widgets.Label(rect, text);
+                widthOffset -= Text.CalcSize(text).x;
+                GenUI.ResetLabelAlign();
+                Text.Font = GameFont.Small;
+                GUI.color = Color.white;
+            }
+        }
+
+        private static bool TryGetFuelCompAndlFactor(out float factor)
+        {
+            factor = 0f;
+            bool flag = false;
+            MainTabWindow_Inspect pane;
+            if (Find.WindowStack.TryGetWindow(out pane))
+            {
+                ITab_Fuel tab = pane.CurTabs.First(x => x is ITab_Fuel) as ITab_Fuel;
+                if (tab != null)
+                {
+                    flag = true;
+                    factor = tab.SelFuelComp?.EquivalentFuelFactor(TreeThingFilterLabelThingDef) ?? 0f;
+                }
+            }
+            return flag;
+        }
+
+
+        //Replaces Listing_Tree.LabelLeft with
+        static IEnumerable<CodeInstruction> DoThingDef_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator) 
+        {
+            List<CodeInstruction> code = instructions.ToList();
+            for (int i = 0; i < code.Count; i++)
+            {
+                if (code[i].opcode == OpCodes.Call && (MethodInfo)code[i].operand == AccessTools.Method(typeof(Listing_Tree), "LabelLeft"))
+                {
+                    code.Insert(i + 1, new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(HarmonyPatches), nameof(HiddenItemsManager_Bypass), new Type[] { typeof(ThingDef) }))); 
+                    break;
+                }
+            }
+            foreach (var c in code) yield return c;
         }
 
         //Replaces Find.HiddenItemsManager.Hidden(ThingDef) with HiddenItemsManager_bypass(ThingDef) on the targeted methods.

@@ -10,8 +10,8 @@ namespace BurnItForFuel
     {
         public StorageSettings FuelSettings;
         private ThingFilter baseFuelSettings;
-        private bool? fuelSettingsIncludeBaseFuel;
         private float baseFuelValue;
+        private bool? fuelSettingsIncludeBaseFuel;
 
         public float BaseFuelValue
         {
@@ -26,17 +26,6 @@ namespace BurnItForFuel
                 baseFuelValue = BaseFuelSettings.AllowedThingDefs.Select(t => t.UnitFuelValue()).Min();
                 return baseFuelValue;
             }
-        }
-
-        public float EquivalentFuelFactor(ThingDef def)
-        {
-            if (BaseFuelValue <= 0f)
-            {
-                Log.Error($"[BurnItForFuel] Invalid base fuel assigned to {parent.LabelCap}.");
-                return 0f;
-            }
-            var unitValue = def.UnitFuelValue();
-            return unitValue > 0 ? unitValue / BaseFuelValue : 0f;
         }
 
         public bool FuelSettingsIncludeBaseFuel //e.g: Dubs Hygiene Burning Pit doesn't. 
@@ -105,6 +94,16 @@ namespace BurnItForFuel
             yield break;
         }
 
+        public float EquivalentFuelFactor(ThingDef def)
+        {
+            if (BaseFuelValue <= 0f)
+            {
+                Log.Error($"[BurnItForFuel] Invalid base fuel assigned to {parent.LabelCap}.");
+                return 0f;
+            }
+            var unitValue = def.UnitFuelValue();
+            return unitValue > 0 ? unitValue / BaseFuelValue : 0f;
+        }
         public StorageSettings GetParentStoreSettings()
         {
             StorageSettings settings = new StorageSettings();

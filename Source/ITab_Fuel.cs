@@ -11,16 +11,19 @@ namespace BurnItForFuel
         }
 
         public override IStoreSettingsParent SelStoreSettingsParent
+        { 
+            get
+            {
+                return SelFuelComp is IStoreSettingsParent ? SelFuelComp as IStoreSettingsParent : null;
+            }
+        }
+
+        public virtual CompSelectFuel SelFuelComp
         {
             get
             {
-                Thing thing = base.SelObject as Thing;
-                CompSelectFuel comp = thing.TryGetComp<CompSelectFuel>();
-                if (comp as IStoreSettingsParent != null)
-                {
-                    return comp as IStoreSettingsParent;
-                }
-                return null;
+                Thing thing = SelObject as Thing;
+                return thing.TryGetComp<CompSelectFuel>();
             }
         }
 
@@ -31,6 +34,5 @@ namespace BurnItForFuel
                 return false;
             }
         }
-
     }
 }

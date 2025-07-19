@@ -8,7 +8,7 @@ namespace BurnItForFuel
     {
         public static Dictionary<ThingDef, float> fuelValueCache = new Dictionary<ThingDef, float>();
 
-        public static float UnitFuelValue(this ThingDef def)
+        public static float UnitFuelValue(this ThingDef def, bool showError = true)
         {
             if (fuelValueCache.ContainsKey(def)) return fuelValueCache[def];
             string errorMsg;
@@ -34,7 +34,7 @@ namespace BurnItForFuel
             return fuelValue;
 
             Zero:
-            Log.Error($"[BurnItForFuel] {def.defName} can't be used as fuel due to {errorMsg}.");
+            if (showError) Log.Error($"[BurnItForFuel] {def.defName} can't be used as fuel due to {errorMsg}.");
             return 0f;
         }
 

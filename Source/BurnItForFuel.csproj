@@ -69,7 +69,6 @@
     <Compile Include="CompSelectFuel.cs" />
     <Compile Include="Initializer.cs" />
     <Compile Include="SelectFuelHelper.cs" />
-    <Compile Include="SettingsUI.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Krafs.Publicizer">
