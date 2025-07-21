@@ -1,6 +1,7 @@
 ﻿using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using Verse;
 
 namespace BurnItForFuel
@@ -9,6 +10,7 @@ namespace BurnItForFuel
     public class CompSelectFuel : ThingComp, IStoreSettingsParent
     {
         public StorageSettings FuelSettings;
+        public ThingDef lastEquivalentFuel;
         private ThingFilter baseFuelSettings;
         private float baseFuelValue;
         private bool? fuelSettingsIncludeBaseFuel;
@@ -24,7 +26,7 @@ namespace BurnItForFuel
                     return 0f;
                 }
                 baseFuelValue = BaseFuelSettings.AllowedThingDefs.Select(t => t.UnitFuelValue()).Min();
-                return baseFuelValue;
+                return baseFuelValue; 
             }
         }
 
@@ -94,16 +96,25 @@ namespace BurnItForFuel
             yield break;
         }
 
-        public float EquivalentFuelFactor(ThingDef def)
+        public float EquivalentFuelRatio(ThingDef def)
         {
+            if (def == null)
+            {
+                Log.Error($"[BurnItForFuel] Can't calculate fuel equivalence for a null def.");
+                goto Zero;
+            }
+            lastEquivalentFuel = def;
             if (BaseFuelValue <= 0f)
             {
                 Log.Error($"[BurnItForFuel] Invalid base fuel assigned to {parent.LabelCap}.");
-                return 0f;
+                goto Zero;
             }
             var unitValue = def.UnitFuelValue();
             return unitValue > 0 ? unitValue / BaseFuelValue : 0f;
+            Zero:
+            return 0f;
         }
+
         public StorageSettings GetParentStoreSettings()
         {
             StorageSettings settings = new StorageSettings();
@@ -210,6 +221,37 @@ namespace BurnItForFuel
             return FuelSettingsIncludeBaseFuel && parent.def.passability != Traversability.Impassable && !parent.def.building.canPlaceOverWall && !IsVehicle();
         }
 
+        public void Refuel(List<Thing> fuelThings)
+        {
+            CompRefuelable compRefuelable = parent.TryGetComp<CompRefuelable>();
+            //if (compRefuelable.Props.atomicFueling)
+            //{
+            //    if (fuelThings.Sum((Thing t) => Mathf.FloorToInt(t.stackCount * EquivalentFuelFactor(t.def))) < GetFuelCountToFullyRefuel())
+            //    {
+            //        Log.ErrorOnce("Error refueling; not enough fuel available for proper atomic refuel", 19586442);
+            //        return;
+            //    }
+            //}
+            int fuelCount = GetFuelCountToFullyRefuel();
+            while (fuelCount > 0 && fuelThings.Count > 0)
+            {
+                Thing thing = fuelThings.Pop<Thing>();
+                float fuelFactor = EquivalentFuelRatio(thing.def);
+                float weightedCount = fuelCount / fuelFactor; //figure the amount needed for this fuel type
+                int usedAmount = Mathf.CeilToInt(Mathf.Min(weightedCount, thing.stackCount)); //figure what will be used from the stack, amount rounded up
+                int satisfiedCount = Mathf.FloorToInt(usedAmount * fuelFactor); //figure how much regular fuel that corresponds to, amount rounded down 
+                compRefuelable.Refuel(satisfiedCount); //refuels the corresponding amount
+                thing.SplitOff(usedAmount).Destroy(DestroyMode.Vanish); //consumes the actual fuel used
+                fuelCount -= satisfiedCount; //deducts the appropiate amount from the needed count. 
+                Log.Message($"Refuel used {usedAmount} of {thing.def.defName} to generate {satisfiedCount} fuel units.");
+            }
+        }
+
+        public int GetFuelCountToFullyRefuel() //modified from the original to ignore atomicFueling, so it always considers the target fuel level
+        {
+            CompRefuelable compRefuelable = parent.TryGetComp<CompRefuelable>();
+            return Mathf.Max(Mathf.CeilToInt((compRefuelable.TargetFuelLevel - compRefuelable.fuel) / compRefuelable.Props.FuelMultiplierCurrentDifficulty), 1);
+        }
 
     }
 }

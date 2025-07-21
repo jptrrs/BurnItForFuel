@@ -10,6 +10,7 @@ using Verse;
 using Verse.AI;
 using Verse.Noise;
 using static System.Net.UnsafeNclNativeMethods.HttpApi;
+using static UnityEngine.UIElements.StylePropertyAnimationSystem;
 
 namespace BurnItForFuel
 {
@@ -17,7 +18,7 @@ namespace BurnItForFuel
     public static class HarmonyPatches
     {
         private static readonly Type patchType = typeof(HarmonyPatches);
-        public static ThingDef TreeThingFilterLabelThingDef;
+        private static ThingDef TreeThingFilterLabelThingDef;
 
         static HarmonyPatches()
         {
@@ -28,11 +29,23 @@ namespace BurnItForFuel
             harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "CanRefuel"),
                 prefix: null, postfix: new HarmonyMethod(patchType, nameof(CanRefuel_Postfix)), transpiler: null);
 
-            //Our own way of looking for fuels.
+            //Our own way of looking for fuels and refueling.
             harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "FindAllFuel"),
                 new HarmonyMethod(patchType, nameof(FindAllFuel_Prefix)));
             harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "FindBestFuel"),
-                null, new HarmonyMethod(patchType, nameof(FindBestFuel_Postfix)), new HarmonyMethod(patchType, nameof(FuelFilter_Transpiler)));
+                null, /*new HarmonyMethod(patchType, nameof(FindBestFuel_Postfix))*/null, new HarmonyMethod(patchType, nameof(FuelFilter_Transpiler)));
+            harmonyInstance.Patch(AccessTools.Method(typeof(CompRefuelable), nameof(CompRefuelable.Refuel), new Type[] { typeof(List<Thing>) }),
+                new HarmonyMethod(patchType, nameof(Refuel_Prefix))/*, new HarmonyMethod(patchType, nameof(Refuel_Postfix)), new HarmonyMethod(patchType, nameof(Refuel_Transpiler))*/);
+            harmonyInstance.Patch(AccessTools.Method(typeof(CompRefuelable), nameof(CompRefuelable.GetFuelCountToFullyRefuel)),
+                new HarmonyMethod(patchType, nameof(GetFuelCountToFullyRefuel_Prefix)));
+
+            //Tweaks the refuel job to consider the weight of different fuels.
+            //harmonyInstance.Patch(AccessTools.Method(typeof(Toils_Haul), nameof(Toils_Haul.ErrorCheckForCarry)),
+            //    new HarmonyMethod(patchType, nameof(ErrorCheckForCarry_Prefix)));
+            //harmonyInstance.Patch(AccessTools.Method(typeof(Toils_Haul), nameof(Toils_Haul.StartCarryThing)),
+            //    new HarmonyMethod(patchType, nameof(StartCarryThing_Prefix)), null);
+            harmonyInstance.Patch(AccessTools.Method(typeof(JobDriver_RefuelAtomic), nameof(JobDriver_RefuelAtomic.MakeNewToils)),
+                null, new HarmonyMethod(patchType, nameof(MakeNewToils_Postfix)), null);
 
             //Teaching the tree filter thingy to behave when employed on the mod settings panel outside of a running game. 
             harmonyInstance.Patch(AccessTools.Method(typeof(Listing_TreeThingFilter), nameof(Listing_TreeThingFilter.DoCategoryChildren)),
@@ -45,6 +58,63 @@ namespace BurnItForFuel
                 new HarmonyMethod(patchType, nameof(DoThingDef_Prefix)), new HarmonyMethod(patchType, nameof(DoThingDef_Postfix)));
             harmonyInstance.Patch(AccessTools.Method(typeof(Listing_Tree), nameof(Listing_Tree.LabelLeft)),
                 new HarmonyMethod(patchType, nameof(LabelLeft_Prefix)));
+        }
+
+        //Modifies the expected fuel count to account for the the targeted fuel during a refuel job. Can't be a regular Prefix/Postfix because all toils are delegates.
+        private static IEnumerable<Toil> MakeNewToils_Postfix(IEnumerable<Toil> toils)
+        {
+            foreach (var toil in toils)
+            {
+                if (toil.debugName == "StartCarryThing")
+                {
+                    yield return AdaptJobCount();
+                    yield return toil;
+                    yield return RectifyJobCount();
+                }
+                else                 
+                {
+                    yield return toil;
+                }
+            }
+        }
+
+        public static Toil AdaptJobCount()
+        {
+            Toil toil = ToilMaker.MakeToil("AdaptJobCount");
+            toil.initAction = delegate ()
+            {
+                Pawn actor = toil.actor;
+                Job curJob = actor.jobs.curJob;
+                Thing refuelable = curJob.GetTarget(TargetIndex.A).Thing;
+                ThingDef fuel = curJob.GetTarget(TargetIndex.B).Thing.def;
+                CompSelectFuel compSelectFuel = refuelable.TryGetComp<CompSelectFuel>();
+                if (compSelectFuel == null)
+                {
+                    Log.Error($"[BurnItForFuel] AdaptJobCount: {refuelable.LabelCap} has no CompSelectFuel. Aborting.");
+                    return;
+                }
+                int previousCount = curJob.count;
+                curJob.count = Mathf.CeilToInt(curJob.count / compSelectFuel.EquivalentFuelRatio(fuel));
+                Log.Message($"[BurnItForFuel] job.count successfully modified from {previousCount} to {curJob.count}");
+            };
+            return toil;
+        }
+
+        public static Toil RectifyJobCount()
+        {
+            Toil toil = ToilMaker.MakeToil("RectifyJobCount");
+            toil.initAction = delegate ()
+            {
+                Pawn actor = toil.actor;
+                Job curJob = actor.jobs.curJob;
+                Thing refuelable = curJob.GetTarget(TargetIndex.A).Thing;
+                CompSelectFuel compSelectFuel = refuelable.TryGetComp<CompSelectFuel>();
+                if (compSelectFuel == null) return;
+                int previousCount = curJob.count;
+                curJob.count = Mathf.CeilToInt(curJob.count * compSelectFuel.EquivalentFuelRatio(compSelectFuel.lastEquivalentFuel));
+                Log.Message($"[BurnItForFuel] job.count successfully rectified back from {previousCount} to {curJob.count}");
+            };
+            return toil;
         }
 
         public static void DoThingDef_Prefix(ThingDef tDef)
@@ -86,14 +156,74 @@ namespace BurnItForFuel
                 if (tab != null)
                 {
                     flag = true;
-                    factor = tab.SelFuelComp?.EquivalentFuelFactor(TreeThingFilterLabelThingDef) ?? 0f;
+                    factor = tab.SelFuelComp?.EquivalentFuelRatio(TreeThingFilterLabelThingDef) ?? 0f;
                 }
             }
             return flag;
         }
 
+        private static bool GetFuelCountToFullyRefuel_Prefix(CompRefuelable __instance, ref int __result)
+        {
+            CompSelectFuel compSelectFuel = __instance.parent.TryGetComp<CompSelectFuel>();
+            if (compSelectFuel != null)
+            {
+                __result = compSelectFuel.GetFuelCountToFullyRefuel();
+                return false;
+            }
+            return true;
+        }
 
-        //Replaces Listing_Tree.LabelLeft with
+
+        private static bool Refuel_Prefix(CompRefuelable __instance, List<Thing> fuelThings)
+        {
+            CompSelectFuel compSelectFuel = __instance.parent.TryGetComp<CompSelectFuel>();
+            if (compSelectFuel != null)
+            {
+                compSelectFuel.Refuel(fuelThings);
+                return false;
+            }
+            return true;
+        }
+
+        //private static void Refuel_Prefix(CompRefuelable __instance)
+        //{
+        //    __instance.parent.TryGetComp<CompSelectFuel>(out RefuelComp);
+        //}
+
+        //private static void Refuel_Postfix()
+        //{
+        //    RefuelComp = null;
+        //}
+
+        ////Replaces Listing_Tree.LabelLeft with StackWeightAsFuel
+        //static IEnumerable<CodeInstruction> Refuel_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        //{
+        //    List<CodeInstruction> code = instructions.ToList();
+        //    for (int i = 0; i < code.Count; i++)
+        //    {
+        //        if (code[i].opcode == OpCodes.Call && (MethodInfo)code[i].operand == AccessTools.Method(typeof(Mathf), "Min", new Type[] {typeof(int),typeof(int)}))
+        //        {
+        //            code.RemoveAt(i);
+        //            code.Insert(i, new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(HarmonyPatches), nameof(StackWeightAsFuel), new Type[] { typeof(int), typeof(Thing) })));
+        //            code.RemoveAt(i - 1); //.stackCount, so only 'thing' is left
+        //            break;
+        //        }
+        //    }
+        //    foreach (var c in code) yield return c;
+        //}
+
+        //private static int StackWeightAsFuel(int min, Thing thing)
+        //{
+        //    int modifiedStack = thing.stackCount;
+        //    if (RefuelComp != null)
+        //    {
+        //        modifiedStack = Mathf.FloorToInt(modifiedStack * RefuelComp.EquivalentFuelFactor(thing.def));
+        //        Log.Message($"[BurnItForFuel] {thing.LabelCap} wheighted to {modifiedStack}");
+        //    }
+        //    return Mathf.Min(min, modifiedStack);
+        //}
+
+        //Replaces Listing_Tree.LabelLeft with HiddenItemsManager_Bypass
         static IEnumerable<CodeInstruction> DoThingDef_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator) 
         {
             List<CodeInstruction> code = instructions.ToList();
@@ -151,10 +281,11 @@ namespace BurnItForFuel
             return false;
         }
 
-        private static List<Thing> FindAllFuel(Pawn pawn, Thing refuelable)
+        private static List<Thing> FindAllFuel(Pawn pawn, Thing refuelable) //returning null when basefuel not selected
         {
-            int fuelCountToFullyRefuel = refuelable.TryGetComp<CompRefuelable>().GetFuelCountToFullyRefuel();
+            //int fuelCountToFullyRefuel = refuelable.TryGetComp<CompRefuelable>().GetFuelCountToFullyRefuel();
             var compSelectFuel = refuelable.TryGetComp<CompSelectFuel>();
+            int fuelCountToFullyRefuel = compSelectFuel.GetFuelCountToFullyRefuel();
             List<Thing> result = FindEnoughReservableThings(pawn, refuelable.Position, new IntRange(fuelCountToFullyRefuel, fuelCountToFullyRefuel), compSelectFuel);
             Log.Message($"[BurnItForFuel] diverted FindAllFuel returns {result.ToStringSafeEnumerable()}.");
             return result;
@@ -163,21 +294,22 @@ namespace BurnItForFuel
         //Ideia: Já que GetFuelCountToFullyRefuel retorna a quantidade de combustivel padrão, podemos fazer a equivalência com outros combustíveis no momento em que a busca é feita, quando o item potencial é averiguado. Aparentemente, essa é a função de FindEnoughReservableThings. ThingListProcessor (nested) acumula o stackcount de cada item e compara com a desiredQuantity, que por sua vez se refere ao combustível padrão.
         public static List<Thing> FindEnoughReservableThings(Pawn pawn, IntVec3 rootCell, IntRange desiredQuantity, CompSelectFuel compSelectFuel)
         {
-            Region region2 = rootCell.GetRegion(pawn.Map);
+            Region localRegion = rootCell.GetRegion(pawn.Map);
             TraverseParms traverseParams = TraverseParms.For(pawn);
             List<Thing> chosenThings = new List<Thing>();
             int accumulatedQuantity = 0;
-            ThingListProcessor(rootCell.GetThingList(region2.Map), region2);
+            float accumulatedFraction = 0f;
+            ThingListProcessor(rootCell.GetThingList(localRegion.Map), localRegion);
             if (accumulatedQuantity < desiredQuantity.max)
             {
-                RegionTraverser.BreadthFirstTraverse(region2, EntryCondition, RegionProcessor, 99999);
+                RegionTraverser.BreadthFirstTraverse(localRegion, EntryCondition, RegionProcessor, 99999);
             }
 
             if (accumulatedQuantity >= desiredQuantity.min)
             {
                 return chosenThings;
             }
-
+            Log.Message($"Didn't find enough. accumulatedQuantity={accumulatedQuantity}, desiredQuantity{desiredQuantity.min}");
             return null;
             bool EntryCondition(Region from, Region r)
             {
@@ -186,8 +318,8 @@ namespace BurnItForFuel
 
             bool RegionProcessor(Region r)
             {
-                List<Thing> things2 = r.ListerThings.ThingsMatching(ThingRequest.ForGroup(ThingRequestGroup.HaulableEver));
-                return ThingListProcessor(things2, r);
+                List<Thing> moreThings = r.ListerThings.ThingsMatching(ThingRequest.ForGroup(ThingRequestGroup.HaulableEver));
+                return ThingListProcessor(moreThings, r);
             }
 
             bool ThingListProcessor(List<Thing> things, Region region)
@@ -198,7 +330,18 @@ namespace BurnItForFuel
                     if (Validator(thing) && !chosenThings.Contains(thing) && ReachabilityWithinRegion.ThingFromRegionListerReachable(thing, region, PathEndMode.ClosestTouch, pawn))
                     {
                         chosenThings.Add(thing);
-                        accumulatedQuantity += (int)(thing.stackCount * compSelectFuel.EquivalentFuelFactor(thing.def));
+                        float found = thing.stackCount * compSelectFuel.EquivalentFuelRatio(thing.def);
+                        int foundInt = Mathf.FloorToInt(found);
+                        accumulatedQuantity += foundInt;
+                        float fraction = found - foundInt;
+                        accumulatedFraction += fraction;
+                        if (accumulatedFraction >= 1f)
+                        {
+                            accumulatedQuantity++;
+                            accumulatedFraction--;
+                        }
+
+
                         if (accumulatedQuantity >= desiredQuantity.max) return true;
                     }
                 }
@@ -211,6 +354,7 @@ namespace BurnItForFuel
                 {
                     return false;
                 }
+                Log.Message($"[BurnItForFuel] Validator for {compSelectFuel.parent.Label} allows {compSelectFuel.FuelSettings.filter.allowedDefs.ToStringSafeEnumerable()}.");
 
                 if (!compSelectFuel.FuelSettings.filter.Allows(x))
                 {
