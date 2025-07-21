@@ -8,7 +8,7 @@ namespace BurnItForFuel;
 
 public class ModBaseBurnItForFuel : ModBase
 {
-    public SettingHandle<FuelSettingsHandle> Fuels;
+    private SettingHandle<FuelSettingsHandle> Fuels;
 
     private SettingHandle<bool> HasEverBeenSet;
 
@@ -19,7 +19,7 @@ public class ModBaseBurnItForFuel : ModBase
 
     public override string ModIdentifier => "JPT_BurnItForFuel";
 
-    public static ThingFilter PossibleFuels
+    private static ThingFilter PossibleFuels
     {
         get
         {
@@ -50,10 +50,7 @@ public class ModBaseBurnItForFuel : ModBase
         HasEverBeenSet = Settings.GetHandle<bool>("HasEverBeenSet", null, null);
         HasEverBeenSet.NeverVisible = true;
         Fuels = Settings.GetHandle<FuelSettingsHandle>("FuelSettings", "", null);
-        if (Fuels.Value == null)
-        {
-            Fuels.Value = new FuelSettingsHandle();
-        }
+        Fuels.Value ??= new FuelSettingsHandle();
 
         if (Fuels.Value.masterFuelSettings.AllowedDefCount == 0 && !HasEverBeenSet)
         {
@@ -93,7 +90,7 @@ public class ModBaseBurnItForFuel : ModBase
 
     public class FuelSettingsHandle : SettingHandleConvertible
     {
-        public ThingFilter masterFuelSettings = new ThingFilter();
+        public ThingFilter masterFuelSettings = new();
 
         public override void FromString(string settingValue)
         {

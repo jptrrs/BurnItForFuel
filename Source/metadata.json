@@ -2,5 +2,14 @@
   "Continued": true,
   "CanAdd": "0",
   "CanRemove": "2",
-  "PreviewVersion": "1.5"
+  "PreviewVersion": "1.6",
+  "Patches": true,
+  "Defs": true,
+  "Assemblies": true,
+  "LinesOfCode": 37377,
+  "LinesOfXML": 6451,
+  "CodeBaseSize": 73,
+  "LastXmlCleaning": "2025-07-21T22:39:43.7446223+02:00",
+  "SocialImageSet": true,
+  "SearchTags": " burning options"
 }

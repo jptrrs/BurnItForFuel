@@ -8,9 +8,9 @@ namespace BurnItForFuel;
 
 public class SettingsUI
 {
-    private const float buttonHeight = 24f;
+    private const float ButtonHeight = 24f;
 
-    private static readonly ThingFilterUI.UIState thingFilterState = new ThingFilterUI.UIState();
+    private static readonly ThingFilterUI.UIState thingFilterState = new();
 
     private static float viewHeight;
 
@@ -24,7 +24,7 @@ public class SettingsUI
             return false;
         }
 
-        DoThingFilterConfigWindow(rect, thingFilterState, ref filter, parentfilter, defaultFilter);
+        doThingFilterConfigWindow(rect, thingFilterState, ref filter, parentfilter, defaultFilter);
 
         var labelRect = new Rect(rect);
         labelRect.width -= 20f;
@@ -35,7 +35,7 @@ public class SettingsUI
         return true;
     }
 
-    public static void DoThingFilterConfigWindow(Rect rect, ThingFilterUI.UIState state, ref ThingFilter filter,
+    private static void doThingFilterConfigWindow(Rect rect, ThingFilterUI.UIState state, ref ThingFilter filter,
         ThingFilter parentFilter = null, ThingFilter defaultFilter = null, int openMask = 1)
     {
         Widgets.DrawMenuSection(rect);
@@ -57,11 +57,11 @@ public class SettingsUI
 
         Text.Font = GameFont.Small;
         rect.yMin = rect2.yMax;
-        var num2 = 1;
-        var rect3 = new Rect(rect.x + 1f, rect.y + 1f + num2, rect.width - 2f, buttonHeight);
+        const int num2 = 1;
+        var rect3 = new Rect(rect.x + 1f, rect.y + 1f + num2, rect.width - 2f, ButtonHeight);
         state.quickSearch.OnGUI(rect3);
         rect.yMin = rect3.yMax;
-        rect.height -= buttonHeight + 1f;
+        rect.height -= ButtonHeight + 1f;
         var node = ThingCategoryNodeDatabase.RootNode;
         if (parentFilter != null)
         {
@@ -72,22 +72,22 @@ public class SettingsUI
         var visibleRect = new Rect(0f, 0f, rect.width, rect.height);
         visibleRect.position += state.scrollPosition;
         Widgets.BeginScrollView(rect, ref state.scrollPosition, viewRect);
-        var y = 2f;
+        const float y = 2f;
         var rect4 = new Rect(0f, y, viewRect.width, 9999f);
         visibleRect.position -= rect4.position;
-        var listing_TreeThingFilter = new Listing_TreeThingFilter(filter, parentFilter, null,
+        var listingTreeThingFilter = new Listing_TreeThingFilter(filter, parentFilter, null,
             DefDatabase<SpecialThingFilterDef>.AllDefs, null, state.quickSearch.filter);
-        listing_TreeThingFilter.Begin(rect4);
-        listing_TreeThingFilter.ListCategoryChildren(node, openMask, null, visibleRect);
-        listing_TreeThingFilter.End();
-        state.quickSearch.noResultsMatched = listing_TreeThingFilter.matchCount == 0;
+        listingTreeThingFilter.Begin(rect4);
+        listingTreeThingFilter.ListCategoryChildren(node, openMask, null, visibleRect);
+        listingTreeThingFilter.End();
+        state.quickSearch.noResultsMatched = listingTreeThingFilter.matchCount == 0;
         if (Event.current.type == EventType.Layout)
         {
-            viewHeight = y + listing_TreeThingFilter.CurHeight + 90f;
+            viewHeight = y + listingTreeThingFilter.CurHeight + 90f;
         }
 
         Widgets.EndScrollView();
-        var buttonRect = new Rect(rect.x + 1f, rect.yMax + 1f, num, buttonHeight)
+        var buttonRect = new Rect(rect.x + 1f, rect.yMax + 1f, num, ButtonHeight)
         {
             height = 24f
         };

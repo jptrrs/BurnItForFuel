@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
@@ -15,27 +16,7 @@ public static class HarmonyPatches
 
     static HarmonyPatches()
     {
-        var harmonyInstance = new Harmony("JPT_BurnItForFuel");
-
-        harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "CanRefuel"),
-            null, new HarmonyMethod(patchType, nameof(CanRefuel_Postfix)));
-
-        harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "FindBestFuel"),
-            null, new HarmonyMethod(patchType, nameof(FindBestFuel_Postfix)));
-
-        harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "FindAllFuel"),
-            null, new HarmonyMethod(patchType, nameof(FindAllFuel_Postfix)));
-
-        harmonyInstance.Patch(AccessTools.Method(typeof(CompRefuelable), "GetFuelCountToFullyRefuel"),
-            null, new HarmonyMethod(patchType, nameof(GetFuelCountToFullyRefuel_Postfix)));
-    }
-
-    public static void CanRefuel_Postfix(Pawn pawn, Thing t, bool forced, ref bool __result)
-    {
-        if (t.TryGetComp<CompSelectFuel>() != null)
-        {
-            __result = CanRefuel(pawn, t, forced);
-        }
+        new Harmony("JPT_BurnItForFuel").PatchAll(Assembly.GetExecutingAssembly());
     }
 
     public static bool CanRefuel(Pawn pawn, Thing t, bool forced = false)
@@ -91,15 +72,7 @@ public static class HarmonyPatches
         return false;
     }
 
-    public static void FindBestFuel_Postfix(Pawn pawn, Thing refuelable, ref Thing __result)
-    {
-        if (refuelable.TryGetComp<CompSelectFuel>() != null)
-        {
-            __result = FindBestFuel(pawn, refuelable);
-        }
-    }
-
-    private static Thing FindBestFuel(Pawn pawn, Thing refuelable)
+    public static Thing FindBestFuel(Pawn pawn, Thing refuelable)
     {
         //Log.Message("FindBestFuel_Postfix for: "+refuelable);
         var filter = refuelable.TryGetComp<CompSelectFuel>().FuelSettings.filter;
@@ -107,27 +80,30 @@ public static class HarmonyPatches
         var position = pawn.Position;
         var map = pawn.Map;
         var bestThingRequest = filter.BestThingRequest;
-        var peMode = PathEndMode.ClosestTouch;
+        const PathEndMode peMode = PathEndMode.ClosestTouch;
         var traverseParams = TraverseParms.For(pawn);
-        var validator = (Predicate<Thing>)Predicate;
+        var validator = (Predicate<Thing>)predicate;
         return GenClosest.ClosestThingReachable(position, map, bestThingRequest, peMode, traverseParams, 9999f,
             validator);
 
-        bool Predicate(Thing x)
+        bool predicate(Thing x)
         {
             return !x.IsForbidden(pawn) && pawn.CanReserve(x) && filter.Allows(x);
         }
     }
 
-    public static void FindAllFuel_Postfix(Pawn pawn, Thing refuelable, ref List<Thing> __result)
+    public static int GetFuelCountToFullyRefuel(CompRefuelable __instance)
     {
-        if (refuelable.TryGetComp<CompSelectFuel>() != null)
+        if (__instance.Props.atomicFueling)
         {
-            __result = FindAllFuel(pawn, refuelable);
+            return Mathf.CeilToInt(__instance.Props.fuelCapacity / __instance.Props.FuelMultiplierCurrentDifficulty);
         }
+
+        var f = (__instance.TargetFuelLevel - __instance.Fuel) / __instance.Props.FuelMultiplierCurrentDifficulty;
+        return Mathf.Max(Mathf.CeilToInt(f), 1);
     }
 
-    private static List<Thing> FindAllFuel(Pawn pawn, Thing refuelable)
+    public static List<Thing> FindAllFuel(Pawn pawn, Thing refuelable)
     {
         var comp = refuelable.TryGetComp<CompRefuelable>();
         var quantity = GetFuelCountToFullyRefuel(comp);
@@ -185,21 +161,5 @@ public static class HarmonyPatches
 
             return false;
         }
-    }
-
-    public static void GetFuelCountToFullyRefuel_Postfix(CompRefuelable __instance, ref int __result)
-    {
-        __result = GetFuelCountToFullyRefuel(__instance);
-    }
-
-    public static int GetFuelCountToFullyRefuel(CompRefuelable __instance)
-    {
-        if (__instance.Props.atomicFueling)
-        {
-            return Mathf.CeilToInt(__instance.Props.fuelCapacity / __instance.Props.FuelMultiplierCurrentDifficulty);
-        }
-
-        var f = (__instance.TargetFuelLevel - __instance.Fuel) / __instance.Props.FuelMultiplierCurrentDifficulty;
-        return Mathf.Max(Mathf.CeilToInt(f), 1);
     }
 }

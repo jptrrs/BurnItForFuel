@@ -1,5 +1,8 @@
 # Changelog for JPTBurnItForFuel
 
+1.6.0 - Mod updated for 1.6 and passed autotests
+
+
 1.5.2 - Mod settings will only show if an active game.
 
 
