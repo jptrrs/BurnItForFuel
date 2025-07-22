@@ -35,15 +35,11 @@ namespace BurnItForFuel
             harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "FindBestFuel"),
                 null, /*new HarmonyMethod(patchType, nameof(FindBestFuel_Postfix))*/null, new HarmonyMethod(patchType, nameof(FuelFilter_Transpiler)));
             harmonyInstance.Patch(AccessTools.Method(typeof(CompRefuelable), nameof(CompRefuelable.Refuel), new Type[] { typeof(List<Thing>) }),
-                new HarmonyMethod(patchType, nameof(Refuel_Prefix))/*, new HarmonyMethod(patchType, nameof(Refuel_Postfix)), new HarmonyMethod(patchType, nameof(Refuel_Transpiler))*/);
+                new HarmonyMethod(patchType, nameof(Refuel_Prefix)));
             harmonyInstance.Patch(AccessTools.Method(typeof(CompRefuelable), nameof(CompRefuelable.GetFuelCountToFullyRefuel)),
                 new HarmonyMethod(patchType, nameof(GetFuelCountToFullyRefuel_Prefix)));
 
             //Tweaks the refuel job to consider the weight of different fuels.
-            //harmonyInstance.Patch(AccessTools.Method(typeof(Toils_Haul), nameof(Toils_Haul.ErrorCheckForCarry)),
-            //    new HarmonyMethod(patchType, nameof(ErrorCheckForCarry_Prefix)));
-            //harmonyInstance.Patch(AccessTools.Method(typeof(Toils_Haul), nameof(Toils_Haul.StartCarryThing)),
-            //    new HarmonyMethod(patchType, nameof(StartCarryThing_Prefix)), null);
             harmonyInstance.Patch(AccessTools.Method(typeof(JobDriver_RefuelAtomic), nameof(JobDriver_RefuelAtomic.MakeNewToils)),
                 null, new HarmonyMethod(patchType, nameof(MakeNewToils_Postfix)), null);
 
@@ -173,7 +169,6 @@ namespace BurnItForFuel
             return true;
         }
 
-
         private static bool Refuel_Prefix(CompRefuelable __instance, List<Thing> fuelThings)
         {
             CompSelectFuel compSelectFuel = __instance.parent.TryGetComp<CompSelectFuel>();
@@ -184,44 +179,6 @@ namespace BurnItForFuel
             }
             return true;
         }
-
-        //private static void Refuel_Prefix(CompRefuelable __instance)
-        //{
-        //    __instance.parent.TryGetComp<CompSelectFuel>(out RefuelComp);
-        //}
-
-        //private static void Refuel_Postfix()
-        //{
-        //    RefuelComp = null;
-        //}
-
-        ////Replaces Listing_Tree.LabelLeft with StackWeightAsFuel
-        //static IEnumerable<CodeInstruction> Refuel_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-        //{
-        //    List<CodeInstruction> code = instructions.ToList();
-        //    for (int i = 0; i < code.Count; i++)
-        //    {
-        //        if (code[i].opcode == OpCodes.Call && (MethodInfo)code[i].operand == AccessTools.Method(typeof(Mathf), "Min", new Type[] {typeof(int),typeof(int)}))
-        //        {
-        //            code.RemoveAt(i);
-        //            code.Insert(i, new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(HarmonyPatches), nameof(StackWeightAsFuel), new Type[] { typeof(int), typeof(Thing) })));
-        //            code.RemoveAt(i - 1); //.stackCount, so only 'thing' is left
-        //            break;
-        //        }
-        //    }
-        //    foreach (var c in code) yield return c;
-        //}
-
-        //private static int StackWeightAsFuel(int min, Thing thing)
-        //{
-        //    int modifiedStack = thing.stackCount;
-        //    if (RefuelComp != null)
-        //    {
-        //        modifiedStack = Mathf.FloorToInt(modifiedStack * RefuelComp.EquivalentFuelFactor(thing.def));
-        //        Log.Message($"[BurnItForFuel] {thing.LabelCap} wheighted to {modifiedStack}");
-        //    }
-        //    return Mathf.Min(min, modifiedStack);
-        //}
 
         //Replaces Listing_Tree.LabelLeft with HiddenItemsManager_Bypass
         static IEnumerable<CodeInstruction> DoThingDef_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator) 
@@ -340,8 +297,6 @@ namespace BurnItForFuel
                             accumulatedQuantity++;
                             accumulatedFraction--;
                         }
-
-
                         if (accumulatedQuantity >= desiredQuantity.max) return true;
                     }
                 }

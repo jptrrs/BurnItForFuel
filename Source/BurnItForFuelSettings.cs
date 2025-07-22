@@ -7,7 +7,7 @@ namespace BurnItForFuel
 {
     public class BurnItForFuelSettings : ModSettings
     {
-        public ThingFilter masterFuelSettings;
+        public ThingFilter masterFuelSettings = new ThingFilter();
         private List<string> ExposedList = new List<string>();
 
         public override void ExposeData()
@@ -21,18 +21,19 @@ namespace BurnItForFuel
             base.ExposeData();
         }
 
-        public void DelayedLoading() //Apparently the DefDatabase wasn't ready before and we couldn't load ThingDefs.
+        public bool DelayedLoading() //Apparently the DefDatabase wasn't ready before and we couldn't load ThingDefs.
         {
-            masterFuelSettings = new ThingFilter();
+            if (ExposedList.Empty()) return false;
             foreach (var e in ExposedList)
             {
                 var def = DefDatabase<ThingDef>.GetNamed(e);
-                if (def != null)
+                if (def != null && def.ValidateAsFuel())
                 {
                     masterFuelSettings.SetAllow(def, true);
                 }
             }
             ExposedList.Clear();
+            return true;
         }
 
         public void SettingsChanged()

@@ -11,31 +11,46 @@ namespace BurnItForFuel
         public static float UnitFuelValue(this ThingDef def, bool showError = true)
         {
             if (fuelValueCache.ContainsKey(def)) return fuelValueCache[def];
+            float flamm, mass;
+            if (!def.ValidateAsFuel(out flamm, out mass, showError)) return 0f;
+            float fuelValue = mass * flamm;
+            fuelValueCache.Add(def, fuelValue);
+            return fuelValue;
+        }
+
+        public static bool ValidateAsFuel(this ThingDef def, out float flamm, out float mass, bool showError = true)
+        {
             string errorMsg;
             if (def.statBases == null)
             {
                 errorMsg = "having no stat bases";
+                flamm = mass = 0f;
                 goto Zero;
             }
-            float flamm = def.GetStatValueAbstract(StatDefOf.Flammability);
+            flamm = def.GetStatValueAbstract(StatDefOf.Flammability);
             if (flamm <= 0f)
             {
                 errorMsg = "being inflammable";
+                mass = 0f;
                 goto Zero;
             }
-            float mass = def.GetStatValueAbstract(StatDefOf.Mass);
+            mass = def.GetStatValueAbstract(StatDefOf.Mass);
             if (mass <= 0f)
             {
                 errorMsg = "having no mass";
                 goto Zero;
             }
-            float fuelValue = mass * flamm;
-            fuelValueCache.Add(def, fuelValue);
-            return fuelValue;
+            return true;
 
             Zero:
-            if (showError) Log.Error($"[BurnItForFuel] {def.defName} can't be used as fuel due to {errorMsg}.");
-            return 0f;
+            if (showError) Log.Error($"[BurnItForFuel] {def.defName} can't be used as fuel due to {errorMsg}."); //migh not be needed at all, if we gatekeep defs properly.
+            return false;
+        }
+
+        public static bool ValidateAsFuel(this ThingDef def)
+        {
+            float flamm, mass;
+            return ValidateAsFuel(def, out flamm, out mass, false);
         }
 
         public static float FuelEquivalenceRatio(ThingDef standard, ThingDef sample)

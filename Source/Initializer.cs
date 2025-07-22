@@ -14,36 +14,24 @@ namespace BurnItForFuel
 
         static Initializer()
         {
-            settings.DelayedLoading();
+            bool savedSettings = settings.DelayedLoading();
             CompInjection();
-            if (settings.masterFuelSettings == null) SetDefaultFuelsOnce();
+            if (!savedSettings) SetDefaultFuelsOnce();
             DefDatabase<ThingDef>.Remove(ThingDef.Named("BurnItForFuel"));
         }
 
         private static void SetDefaultFuelsOnce()
         {
             Log.Message($"[BurnItForFuel] Setting default fuels for the first time.");
-            var filter = new ThingFilter();
             var defaultsDef = ThingDef.Named("BurnItForFuel");
-            StringBuilder errorMsg = new StringBuilder();
-            if (defaultsDef == null)
-            {
-                errorMsg.Append("[BurnItForFuel] The definition for default fuels couldn't be found!");
-                goto error;
+            if (defaultsDef == null) Log.Warning("[BurnItForFuel] The definition for default fuels couldn't be found! Check the file 'Things.xml' for a ThingDef called 'BurnItForFuel'. The mod will still work, but this is will require manual selection of fuels from the options panel.");
+            foreach (var def in defaultsDef.building.fixedStorageSettings.filter.AllowedThingDefs)
+            { 
+                if (def.ValidateAsFuel())
+                {
+                    settings.masterFuelSettings.SetAllow(def, true);
+                }
             }
-            filter.CopyAllowancesFrom(ThingDef.Named("BurnItForFuel").building.fixedStorageSettings.filter);
-            if (filter.AllowedDefCount < 1)
-            {
-                errorMsg.Append("[BurnItForFuel] No fuels have been set by default.");
-                goto error;
-            }
-            settings.masterFuelSettings = filter;
-            //settings.IsSet = true;
-            return;
-
-            error:
-            Log.Warning(errorMsg.ToString() + " Check the file 'Things.xml' for a ThingDef called 'BurnItForFuel'. The mod will still work, but this is will require manual selection of fuels from the options panel.");
-            return;
         }
 
         private static void CompInjection()
@@ -53,17 +41,6 @@ namespace BurnItForFuel
                 def.comps.Add(new CompProperties_SelectFuel());
                 if (def.inspectorTabs == null) def.inspectorTabs = new List<Type>();
                 def.inspectorTabs.Add(typeof(ITab_Fuel));
-                TweakRefuelable(def.GetCompProperties<CompProperties_Refuelable>());
-            }
-        }
-
-        private static void TweakRefuelable(CompProperties_Refuelable fuelcomp)
-        {
-            fuelcomp.targetFuelLevelConfigurable = true;
-            fuelcomp.canEjectFuel = true;
-            if (fuelcomp.initialConfigurableTargetFuelLevel == 0)
-            {
-                fuelcomp.initialConfigurableTargetFuelLevel = fuelcomp.fuelCapacity;
             }
         }
     }

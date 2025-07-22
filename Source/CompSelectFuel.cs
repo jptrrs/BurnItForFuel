@@ -11,9 +11,10 @@ namespace BurnItForFuel
     {
         public StorageSettings FuelSettings;
         public ThingDef lastEquivalentFuel;
-        private ThingFilter baseFuelSettings;
         private float baseFuelValue;
         private bool? fuelSettingsIncludeBaseFuel;
+        private CompRefuelable siblingComp;
+        private static List<ThingDef> nativeTargetFuelLevel = new List<ThingDef>();
 
         public float BaseFuelValue
         {
@@ -26,7 +27,7 @@ namespace BurnItForFuel
                     return 0f;
                 }
                 baseFuelValue = BaseFuelSettings.AllowedThingDefs.Select(t => t.UnitFuelValue()).Min();
-                return baseFuelValue; 
+                return baseFuelValue;
             }
         }
 
@@ -56,34 +57,24 @@ namespace BurnItForFuel
             }
         }
 
-        public bool StorageTabVisible { get; set; }
-
-        private ThingFilter BaseFuelSettings
+        public CompRefuelable SiblingComp
         {
             get
             {
-                if (baseFuelSettings != null) return baseFuelSettings;
-                if (parent.def.comps != null)
+                if (siblingComp == null)
                 {
-                    List<CompProperties> comps = parent.def.comps;
-                    for (int i = 0; i < comps.Count; i++)
+                    siblingComp = parent.TryGetComp<CompRefuelable>();
+                    if (siblingComp == null)
                     {
-                        if (comps[i].compClass == typeof(CompRefuelable))
-                        {
-                            CompProperties_Refuelable comp = (CompProperties_Refuelable)comps[i];
-                            if (comp.fuelFilter == null)
-                            {
-                                Log.Warning("[BurnItForFuel] " + parent.LabelCap + " has a CompRefuelable, but it doesn't have a fuel filter set. This will cause issues with fuel selection.");
-                                return null;
-                            }
-                            baseFuelSettings = comp.fuelFilter;
-                            return baseFuelSettings;
-                        }
+                        Log.Error($"[BurnItForFuel] {parent.LabelCap} has a CompSelectFuel but no CompRefuelable!");
                     }
                 }
-                return null;
+                return siblingComp;
             }
         }
+        public bool StorageTabVisible { get; set; }
+
+        private ThingFilter BaseFuelSettings => SiblingComp.Props.fuelFilter;
 
         private ThingFilter UserFuelSettings => BurnItForFuelMod.settings.masterFuelSettings;
 
@@ -115,6 +106,11 @@ namespace BurnItForFuel
             return 0f;
         }
 
+        public int GetFuelCountToFullyRefuel() //modified from the original to ignore atomicFueling, so it always considers the target fuel level
+        {
+            return Mathf.Max(Mathf.CeilToInt((SiblingComp.TargetFuelLevel - SiblingComp.fuel) / SiblingComp.Props.FuelMultiplierCurrentDifficulty), 1);
+        }
+
         public StorageSettings GetParentStoreSettings()
         {
             StorageSettings settings = new StorageSettings();
@@ -132,7 +128,7 @@ namespace BurnItForFuel
         {
             base.Initialize(props);
             if (Scribe.mode != LoadSaveMode.PostLoadInit) SetupFuelSettings();
-            SetUpFuelMixing();
+            SetUpFuelFeatures();
         }
 
         public void Notify_SettingsChanged()
@@ -162,76 +158,16 @@ namespace BurnItForFuel
             }
         }
 
-        public void SetUpFuelMixing()
-        {
-            if (parent.TryGetComp<CompRefuelable>() != null && SafeToMixFuels())
-            {
-                parent.TryGetComp<CompRefuelable>().Props.atomicFueling = true;
-                StorageTabVisible = true;
-            }
-            else StorageTabVisible = false;
-        }
-
-        public void SetupFuelSettings()
-        {
-            FuelSettings = new StorageSettings(this);
-            if (BaseFuelSettings != null)
-            {
-                if ((!FuelSettingsIncludeBaseFuel || IsVehicle()) && !parent.def.GetCompProperties<CompProperties_Refuelable>().atomicFueling)
-                {
-                    if (!FuelSettingsIncludeBaseFuel) 
-                    { 
-                        Log.Message("[BurnItForFuel] " + BaseFuelSettings.ToString() + " is used by the " + parent.Label + ", but it isn't marked as fuel. Fuel tab disabled. Change the settings or add <atomicFueling>true</atomicFueling> to its CompProperties_Refuelable to prevent this.");
-                    }
-                    if (IsVehicle()) Log.Message("[BurnItForFuel] " + parent.LabelCap + " looks like its a vehicle, so we're preventing fuel mixing to protect your engines. Fuel tab disabled. Add <atomicFueling>true</atomicFueling> to its CompProperties_Refuelable to prevent this.");
-                    FuelSettings.filter.SetAllowAll(BaseFuelSettings);
-                }
-                else foreach (ThingDef thingDef in UserFuelSettings.AllowedThingDefs)
-                {
-                    FuelSettings.filter.SetAllow(thingDef, true);
-                }
-            }
-        }
-        public void ValidateFuelSettings()
-        {
-            if (Scribe.mode == LoadSaveMode.Inactive)
-            {
-                SetUpFuelMixing();
-            }
-            if (SafeToMixFuels())
-            {
-                foreach (ThingDef def in (from d in FuelSettings.filter.AllowedThingDefs
-                                          where !GetParentStoreSettings().filter.Allows(d)
-                                          select d).ToList())
-                {
-                    FuelSettings.filter.SetAllow(def, false);
-                    Log.Warning("[BurnItForFuel] " + def.defName + " is no longer fuel, so it was removed from the " + parent + " fuel settings.");
-                }
-            }
-        }
-
-        private bool IsVehicle()
-        {
-            CompProperties_Refuelable props = parent.TryGetComp<CompRefuelable>().Props;
-            return props.targetFuelLevelConfigurable && props.consumeFuelOnlyWhenUsed;
-        }
-
-        private bool SafeToMixFuels()
-        {
-            return FuelSettingsIncludeBaseFuel && parent.def.passability != Traversability.Impassable && !parent.def.building.canPlaceOverWall && !IsVehicle();
-        }
-
         public void Refuel(List<Thing> fuelThings)
         {
-            CompRefuelable compRefuelable = parent.TryGetComp<CompRefuelable>();
-            //if (compRefuelable.Props.atomicFueling)
-            //{
-            //    if (fuelThings.Sum((Thing t) => Mathf.FloorToInt(t.stackCount * EquivalentFuelFactor(t.def))) < GetFuelCountToFullyRefuel())
-            //    {
-            //        Log.ErrorOnce("Error refueling; not enough fuel available for proper atomic refuel", 19586442);
-            //        return;
-            //    }
-            //}
+            if (SiblingComp.Props.atomicFueling)
+            {
+                if (fuelThings.Sum((Thing t) => Mathf.FloorToInt(t.stackCount * EquivalentFuelRatio(t.def))) < GetFuelCountToFullyRefuel())
+                {
+                    Log.ErrorOnce("Error refueling; not enough fuel available for proper atomic refuel", 19586442);
+                    return;
+                }
+            }
             int fuelCount = GetFuelCountToFullyRefuel();
             while (fuelCount > 0 && fuelThings.Count > 0)
             {
@@ -240,18 +176,92 @@ namespace BurnItForFuel
                 float weightedCount = fuelCount / fuelFactor; //figure the amount needed for this fuel type
                 int usedAmount = Mathf.CeilToInt(Mathf.Min(weightedCount, thing.stackCount)); //figure what will be used from the stack, amount rounded up
                 int satisfiedCount = Mathf.FloorToInt(usedAmount * fuelFactor); //figure how much regular fuel that corresponds to, amount rounded down 
-                compRefuelable.Refuel(satisfiedCount); //refuels the corresponding amount
+                SiblingComp.Refuel(satisfiedCount); //refuels the corresponding amount
                 thing.SplitOff(usedAmount).Destroy(DestroyMode.Vanish); //consumes the actual fuel used
                 fuelCount -= satisfiedCount; //deducts the appropiate amount from the needed count. 
                 Log.Message($"Refuel used {usedAmount} of {thing.def.defName} to generate {satisfiedCount} fuel units.");
             }
         }
 
-        public int GetFuelCountToFullyRefuel() //modified from the original to ignore atomicFueling, so it always considers the target fuel level
+        public void SetUpFuelFeatures()
         {
-            CompRefuelable compRefuelable = parent.TryGetComp<CompRefuelable>();
-            return Mathf.Max(Mathf.CeilToInt((compRefuelable.TargetFuelLevel - compRefuelable.fuel) / compRefuelable.Props.FuelMultiplierCurrentDifficulty), 1);
+            if (SiblingComp == null) return;
+            var props = SiblingComp.Props;
+
+            //Configurable Target Fuel Level
+            if (!nativeTargetFuelLevel.Contains(parent.def) && props.targetFuelLevelConfigurable)
+            {
+                nativeTargetFuelLevel.Add(parent.def);
+            }
+            props.targetFuelLevelConfigurable = true;
+            if (props.initialConfigurableTargetFuelLevel == 0)
+            {
+                props.initialConfigurableTargetFuelLevel = props.fuelCapacity;
+            }
+
+            //Fuel Mixing
+            if (SafeToMixFuels())
+            {
+                props.atomicFueling = true;
+                StorageTabVisible = true;
+            }
+            else StorageTabVisible = false;
+
+            //Testing
+            props.canEjectFuel = true;
+
         }
 
+        public void SetupFuelSettings()
+        {
+            FuelSettings = new StorageSettings(this);
+            FuelSettings.filter.SetDisallowAll(UserFuelSettings.AllowedThingDefs);
+            if (BaseFuelSettings != null)
+            {
+                //if ((!FuelSettingsIncludeBaseFuel || IsVehicle()) && !SiblingComp.Props.atomicFueling)
+                //{
+                //This is actually done by SetUpFuelFeatures, warning is here so it only shows once.
+                if (!FuelSettingsIncludeBaseFuel)
+                    {
+                        Log.Message($"[BurnItForFuel] {BaseFuelSettings.ToString()} is used by the {parent.Label}, but it isn't marked as fuel. Fuel tab disabled. Change the settings to prevent this.");
+                    }
+                    if (IsVehicle())
+                    {
+                        Log.Message($"[BurnItForFuel] {parent.LabelCap} looks like its a vehicle, so we're preventing fuel mixing to protect your engines. Fuel tab disabled.  Change the settings to prevent this.");
+                } 
+                //}
+                FuelSettings.filter.SetAllowAll(BaseFuelSettings);
+            }
+        }
+
+        public void ValidateFuelSettings()
+        {
+            fuelSettingsIncludeBaseFuel = null; //reset the cached value, so it can be recalculated
+            if (Scribe.mode != LoadSaveMode.PostLoadInit) 
+            {
+                SetUpFuelFeatures();
+            }
+            if (SafeToMixFuels())
+            {
+                //foreach (ThingDef def in (from d in FuelSettings.filter.AllowedThingDefs
+                //                          where !GetParentStoreSettings().filter.Allows(d)
+                //                          select d).ToList())
+                foreach (ThingDef def in FuelSettings.filter.AllowedThingDefs.Where(d => !GetParentStoreSettings().filter.Allows(d)))
+                {
+                    FuelSettings.filter.SetAllow(def, false);
+                    Log.Warning($"[BurnItForFuel] {def.defName} is no longer fuel, so it was removed from the {parent} fuel settings.");
+                }
+            }
+        }
+
+        private bool IsVehicle()
+        {
+            return nativeTargetFuelLevel.Contains(parent.def) && SiblingComp.Props.consumeFuelOnlyWhenUsed;
+        }
+
+        private bool SafeToMixFuels()
+        {
+            return FuelSettingsIncludeBaseFuel && parent.def.passability != Traversability.Impassable && !parent.def.building.canPlaceOverWall && !IsVehicle();
+        }
     }
 }
