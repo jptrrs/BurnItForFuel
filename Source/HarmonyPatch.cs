@@ -8,9 +8,6 @@ using System.Reflection.Emit;
 using UnityEngine;
 using Verse;
 using Verse.AI;
-using Verse.Noise;
-using static System.Net.UnsafeNclNativeMethods.HttpApi;
-using static UnityEngine.UIElements.StylePropertyAnimationSystem;
 
 namespace BurnItForFuel
 {
@@ -33,7 +30,7 @@ namespace BurnItForFuel
             harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "FindAllFuel"),
                 new HarmonyMethod(patchType, nameof(FindAllFuel_Prefix)));
             harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "FindBestFuel"),
-                null, /*new HarmonyMethod(patchType, nameof(FindBestFuel_Postfix))*/null, new HarmonyMethod(patchType, nameof(FuelFilter_Transpiler)));
+                null, null, new HarmonyMethod(patchType, nameof(FuelFilter_Transpiler)));
             harmonyInstance.Patch(AccessTools.Method(typeof(CompRefuelable), nameof(CompRefuelable.Refuel), new Type[] { typeof(List<Thing>) }),
                 new HarmonyMethod(patchType, nameof(Refuel_Prefix)));
             harmonyInstance.Patch(AccessTools.Method(typeof(CompRefuelable), nameof(CompRefuelable.GetFuelCountToFullyRefuel)),
@@ -321,23 +318,18 @@ namespace BurnItForFuel
         }
 
         //Replaces TryGetComp<CompRefuelable>().Props.fuelFilter with TryGetComp<CompSelectFuel>().FuelSettings.filter.
-        static IEnumerable<CodeInstruction> FuelFilter_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        static IEnumerable<CodeInstruction> FuelFilter_Transpiler(IEnumerable<CodeInstruction> instructions /*, ILGenerator generator*/)
         {
-            List<CodeInstruction> code = instructions.ToList();
-            for (int i = 0; i < code.Count; i++)
-            {
-                if (code[i].opcode == OpCodes.Callvirt && (MethodInfo)code[i].operand == AccessTools.PropertyGetter(typeof(CompRefuelable), "Props"))
-                {
-                    code.RemoveAt(i - 1); //TryGetComp<CompRefuelable>()
-                    code.RemoveAt(i - 1); //.Props
-                    code.RemoveAt(i - 1); //.fuelFilter
-                    code.Insert(i - 1, new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ThingCompUtility), "TryGetComp", new Type[] { typeof(Thing) }, new Type[] { typeof(CompSelectFuel) }))); //TryGetComp<CompSelectFuel>()
-                    code.Insert(i, new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(CompSelectFuel), nameof(CompSelectFuel.FuelSettings)))); //.FuelSettings
-                    code.Insert(i + 1, new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(StorageSettings), nameof(StorageSettings.filter)))); //.filter
-                    break;
-                }
-            }
-            foreach (var c in code) yield return c;
+            // Without ILGenerator, the CodeMatcher will not be able to create labels
+            var codeMatcher = new CodeMatcher(instructions /*, ILGenerator generator*/);
+
+            codeMatcher.MatchStartForward(new CodeMatch(CodeMatch.LoadField(typeof(CompProperties_Refuelable), "fuelFilter")))
+                .RemoveInstructionsInRange(codeMatcher.Pos - 2, codeMatcher.Pos).Advance(-2)
+                .InsertAndAdvance(CodeMatch.Call(typeof(ThingCompUtility), "TryGetComp", new Type[] { typeof(Thing) }, new Type[] { typeof(CompSelectFuel) }))
+                .InsertAndAdvance(CodeMatch.LoadField(typeof(CompSelectFuel), nameof(CompSelectFuel.FuelSettings)))
+                .InsertAndAdvance(CodeMatch.LoadField(typeof(StorageSettings), nameof(StorageSettings.filter)));
+
+            return codeMatcher.Instructions();
         }
 
     }
