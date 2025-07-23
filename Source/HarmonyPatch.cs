@@ -15,7 +15,9 @@ namespace BurnItForFuel
     public static class HarmonyPatches
     {
         private static readonly Type patchType = typeof(HarmonyPatches);
-        private static ThingDef TreeThingFilterLabelThingDef;
+        private static ThingDef TTFilterLabelThingDef;
+        public static CompSelectFuel TTFilterCompSelectFuel;
+        public static bool TTFilterWindowFlag = false;
 
         static HarmonyPatches()
         {
@@ -46,8 +48,10 @@ namespace BurnItForFuel
             harmonyInstance.Patch(AccessTools.Method(typeof(QuickSearchFilter), nameof(QuickSearchFilter.Matches), new Type[] {typeof(ThingDef)}),
                 null, null, new HarmonyMethod(patchType, nameof(HiddenItemsManager_Transpiler)));
 
-            //Inserting a fuel power indicator for the tree filter thingy.
-            harmonyInstance.Patch(AccessTools.Method(typeof(Listing_TreeThingFilter), nameof(Listing_TreeThingFilter.DoThingDef)),
+            //Inserting extra buttons and a fuel power indicator to the Thing Filter config window.
+            harmonyInstance.Patch(AccessTools.Method(typeof(ThingFilterUI), nameof(ThingFilterUI.DoThingFilterConfigWindow)),
+                /*new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Prefix))*/null, new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Postfix)), new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Transpiler)));
+                        harmonyInstance.Patch(AccessTools.Method(typeof(Listing_TreeThingFilter), nameof(Listing_TreeThingFilter.DoThingDef)),
                 new HarmonyMethod(patchType, nameof(DoThingDef_Prefix)), new HarmonyMethod(patchType, nameof(DoThingDef_Postfix)));
             harmonyInstance.Patch(AccessTools.Method(typeof(Listing_Tree), nameof(Listing_Tree.LabelLeft)),
                 new HarmonyMethod(patchType, nameof(LabelLeft_Prefix)));
@@ -112,20 +116,19 @@ namespace BurnItForFuel
 
         public static void DoThingDef_Prefix(ThingDef tDef)
         {
-            TreeThingFilterLabelThingDef = tDef;
+            if (TTFilterWindowFlag) TTFilterLabelThingDef = tDef;
         }
 
         public static void DoThingDef_Postfix(ThingDef tDef)
         {
-            TreeThingFilterLabelThingDef = null;
+            TTFilterLabelThingDef = null;
         }
 
         public static void LabelLeft_Prefix(Listing_TreeThingFilter __instance, float widthOffset)
         {
-            if (TreeThingFilterLabelThingDef != null)
+            if (TTFilterLabelThingDef != null)
             {
-                float fuelValue;
-                string text = TryGetFuelCompAndlFactor(out fuelValue) ? fuelValue.ToStringPercent() : TreeThingFilterLabelThingDef.UnitFuelValue(false).ToString();
+                string text = TTFilterCompSelectFuel?.EquivalentFuelRatio(TTFilterLabelThingDef).ToStringPercent() ?? TTFilterLabelThingDef.UnitFuelValue(false).ToString();
                 Rect rect = new Rect(0f, __instance.curY, __instance.LabelWidth + widthOffset, 40f);
                 Text.Font = GameFont.Small;
                 Text.Anchor = TextAnchor.UpperRight;
@@ -136,23 +139,6 @@ namespace BurnItForFuel
                 Text.Font = GameFont.Small;
                 GUI.color = Color.white;
             }
-        }
-
-        private static bool TryGetFuelCompAndlFactor(out float factor)
-        {
-            factor = 0f;
-            bool flag = false;
-            MainTabWindow_Inspect pane;
-            if (Find.WindowStack.TryGetWindow(out pane))
-            {
-                ITab_Fuel tab = pane.CurTabs.First(x => x is ITab_Fuel) as ITab_Fuel;
-                if (tab != null)
-                {
-                    flag = true;
-                    factor = tab.SelFuelComp?.EquivalentFuelRatio(TreeThingFilterLabelThingDef) ?? 0f;
-                }
-            }
-            return flag;
         }
 
         private static bool GetFuelCountToFullyRefuel_Prefix(CompRefuelable __instance, ref int __result)
@@ -177,41 +163,48 @@ namespace BurnItForFuel
             return true;
         }
 
-        //Replaces Listing_Tree.LabelLeft with HiddenItemsManager_Bypass
-        static IEnumerable<CodeInstruction> DoThingDef_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator) 
-        {
-            List<CodeInstruction> code = instructions.ToList();
-            for (int i = 0; i < code.Count; i++)
-            {
-                if (code[i].opcode == OpCodes.Call && (MethodInfo)code[i].operand == AccessTools.Method(typeof(Listing_Tree), "LabelLeft"))
-                {
-                    code.Insert(i + 1, new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(HarmonyPatches), nameof(HiddenItemsManager_Bypass), new Type[] { typeof(ThingDef) }))); 
-                    break;
-                }
-            }
-            foreach (var c in code) yield return c;
-        }
-
         //Replaces Find.HiddenItemsManager.Hidden(ThingDef) with HiddenItemsManager_bypass(ThingDef) on the targeted methods.
-        static IEnumerable<CodeInstruction> HiddenItemsManager_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator) 
+        static IEnumerable<CodeInstruction> HiddenItemsManager_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            List<CodeInstruction> code = instructions.ToList();
-            for (int i = 0; i < code.Count; i++)
-            {
-                if (code[i].opcode == OpCodes.Callvirt && (MethodInfo)code[i].operand == AccessTools.Method(typeof(HiddenItemsManager), "Hidden"))
-                {
-                    code.RemoveAt(i);
-                    code.Insert(i, new CodeInstruction(OpCodes.Callvirt, AccessTools.Method(typeof(HarmonyPatches), nameof(HiddenItemsManager_Bypass), new Type[] { typeof(ThingDef) }))); 
-                    code.RemoveAt(i - 2);
-                    break;
-                }
-            }
-            foreach (var c in code) yield return c;
+            var codeMatcher = new CodeMatcher(instructions);
+            codeMatcher.MatchStartForward(new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(HiddenItemsManager), "Hidden")))
+                .SetInstruction(new CodeMatch(CodeMatch.Call(typeof(HarmonyPatches), nameof(HiddenItemsManager_Bypass), new Type[] { typeof(ThingDef) })))
+                .Advance(-2).RemoveInstruction();
+            return codeMatcher.Instructions();
         }
 
         public static bool HiddenItemsManager_Bypass(ThingDef t)
         {
             return Current.ProgramState == ProgramState.Playing ? Find.HiddenItemsManager.Hidden(t) : false;
+        }
+
+        public static void DoThingFilterConfigWindow_Prefix()
+        {
+            Window pane;
+            Find.WindowStack.TryGetWindow(out pane);
+            Log.Message($"[BurnItForFuel] DoThingFilterConfigWindow called. {pane.GetType()}");
+            TTFilterWindowFlag = true;
+        }
+
+        public static void DoThingFilterConfigWindow_Postfix()
+        {
+            TTFilterWindowFlag = false;
+        }
+
+        //Insterts a call to MakeRoomForFootButtons() before the Rect.yMax assignment in DoThingFilterConfigWindow.
+        public static IEnumerable<CodeInstruction> DoThingFilterConfigWindow_Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            var codeMatcher = new CodeMatcher(instructions);
+            codeMatcher.End()
+                .MatchStartBackwards(new CodeMatch(new CodeInstruction(OpCodes.Call, AccessTools.PropertySetter(typeof(Rect), nameof(Rect.yMax)))))
+                .MatchStartBackwards(new CodeMatch(new CodeInstruction(OpCodes.Ldc_R4))).Advance(1)
+                .Insert(new CodeMatch(CodeMatch.Call(typeof(HarmonyPatches), nameof(MakeRoomForFootButtons), new Type[] {typeof(float)})));
+            return codeMatcher.Instructions();
+        }
+
+        public static float MakeRoomForFootButtons(float original)
+        {
+            return TTFilterWindowFlag ? BurnItForFuelSettings.buttonHeight : original;
         }
 
         public static void CanRefuel_Postfix(object __instance, Pawn pawn, Thing t, bool forced, ref bool __result)
@@ -318,10 +311,9 @@ namespace BurnItForFuel
         }
 
         //Replaces TryGetComp<CompRefuelable>().Props.fuelFilter with TryGetComp<CompSelectFuel>().FuelSettings.filter.
-        static IEnumerable<CodeInstruction> FuelFilter_Transpiler(IEnumerable<CodeInstruction> instructions /*, ILGenerator generator*/)
+        static IEnumerable<CodeInstruction> FuelFilter_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            // Without ILGenerator, the CodeMatcher will not be able to create labels
-            var codeMatcher = new CodeMatcher(instructions /*, ILGenerator generator*/);
+            var codeMatcher = new CodeMatcher(instructions);
 
             codeMatcher.MatchStartForward(new CodeMatch(CodeMatch.LoadField(typeof(CompProperties_Refuelable), "fuelFilter")))
                 .RemoveInstructionsInRange(codeMatcher.Pos - 2, codeMatcher.Pos).Advance(-2)

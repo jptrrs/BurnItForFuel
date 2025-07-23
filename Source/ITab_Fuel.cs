@@ -2,7 +2,7 @@
 using RimWorld;
 
 namespace BurnItForFuel
-{ 
+{
     public class ITab_Fuel : ITab_Storage
     {
         public ITab_Fuel()
@@ -11,7 +11,7 @@ namespace BurnItForFuel
         }
 
         public override IStoreSettingsParent SelStoreSettingsParent
-        { 
+        {
             get
             {
                 return SelFuelComp is IStoreSettingsParent ? SelFuelComp as IStoreSettingsParent : null;
@@ -33,6 +33,18 @@ namespace BurnItForFuel
             {
                 return false;
             }
+        }
+
+        //public override void OnOpen()
+        //{
+        //    base.OnOpen();
+        //    SelectFuelHelper.RaiseTTFilterWindowFlag(this);
+        //}
+
+        public override void FillTab()
+        {
+            SelectFuelHelper.RaiseTTFilterWindowFlag(this);
+            base.FillTab();
         }
     }
 }

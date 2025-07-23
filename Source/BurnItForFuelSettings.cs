@@ -9,6 +9,7 @@ namespace BurnItForFuel
     public class BurnItForFuelSettings : ModSettings
     {
         public ThingFilter masterFuelSettings = new ThingFilter();
+        public static float buttonHeight = 30f;
         private List<string> ExposedList = new List<string>();
 
         public override void ExposeData()
@@ -83,6 +84,7 @@ namespace BurnItForFuel
 
 
             //Action
+            SelectFuelHelper.RaiseTTFilterWindowFlag(this);
             Widgets.Label(ColA_header, fuelsTitle);
             if (filter != null) ThingFilterUI.DoThingFilterConfigWindow(ColA_body, new ThingFilterUI.UIState(), filter, parentfilter, 1, null, DefDatabase<SpecialThingFilterDef>.AllDefs);
             Widgets.Label(ColB_header, option1);
