@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using RimWorld;
+using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using UnityEngine;
@@ -9,8 +10,23 @@ namespace BurnItForFuel
     public class BurnItForFuelSettings : ModSettings
     {
         public ThingFilter masterFuelSettings = new ThingFilter();
+        public bool hideInvalids = true;
         public static float buttonHeight = 30f;
         private List<string> ExposedList = new List<string>();
+
+        public ThingFilter PossibleFuels
+        {
+            get
+            {
+                var filter = new ThingFilter();
+                IEnumerable<ThingDef> fuels = DefDatabase<ThingDef>.AllDefsListForReading.Where(d => d.IsWithinCategory(ThingCategoryDefOf.Root) && (!hideInvalids || d.ValidateAsFuel()));
+                foreach (ThingDef def in fuels)
+                {
+                    filter.SetAllow(def, true);
+                }
+                return filter;
+            }
+        }
 
         public override void ExposeData()
         {
@@ -51,7 +67,7 @@ namespace BurnItForFuel
             }
         }
 
-        public bool CustomDrawer_ThingFilter(Rect rect, ref ThingFilter filter, ThingFilter parentfilter)
+        public bool Draw(Rect rect)
         {
             //text
             string fuelsTitle = "Select Fuels:";
@@ -84,10 +100,18 @@ namespace BurnItForFuel
 
 
             //Action
+            float num = ColA_header.y;
             SelectFuelHelper.RaiseTTFilterWindowFlag(this);
-            Widgets.Label(ColA_header, fuelsTitle);
-            if (filter != null) ThingFilterUI.DoThingFilterConfigWindow(ColA_body, new ThingFilterUI.UIState(), filter, parentfilter, 1, null, DefDatabase<SpecialThingFilterDef>.AllDefs);
+            Widgets.Label(ColA_header, ref num, fuelsTitle, new TipSignal("fuelsToolTip"));
+            ThingFilterUI.DoThingFilterConfigWindow(ColA_body, new ThingFilterUI.UIState(), masterFuelSettings, PossibleFuels, 1, null, DefDatabase<SpecialThingFilterDef>.AllDefs);
             Widgets.Label(ColB_header, option1);
+            Listing_Standard listingStandard = new Listing_Standard();
+            listingStandard.Begin(ColB_body);
+            listingStandard.CheckboxLabeled(option1, ref hideInvalids, "exampleBoolToolTip");
+            //listingStandard.Label("exampleFloatExplanation");
+            //settings.exampleFloat = listingStandard.Slider(settings.exampleFloat, 100f, 300f);
+            listingStandard.End();
+
 
             return true;
         }

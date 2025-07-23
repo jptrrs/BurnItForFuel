@@ -51,7 +51,7 @@ namespace BurnItForFuel
             //Inserting extra buttons and a fuel power indicator to the Thing Filter config window.
             harmonyInstance.Patch(AccessTools.Method(typeof(ThingFilterUI), nameof(ThingFilterUI.DoThingFilterConfigWindow)),
                 /*new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Prefix))*/null, new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Postfix)), new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Transpiler)));
-                        harmonyInstance.Patch(AccessTools.Method(typeof(Listing_TreeThingFilter), nameof(Listing_TreeThingFilter.DoThingDef)),
+            harmonyInstance.Patch(AccessTools.Method(typeof(Listing_TreeThingFilter), nameof(Listing_TreeThingFilter.DoThingDef)),
                 new HarmonyMethod(patchType, nameof(DoThingDef_Prefix)), new HarmonyMethod(patchType, nameof(DoThingDef_Postfix)));
             harmonyInstance.Patch(AccessTools.Method(typeof(Listing_Tree), nameof(Listing_Tree.LabelLeft)),
                 new HarmonyMethod(patchType, nameof(LabelLeft_Prefix)));
@@ -178,13 +178,13 @@ namespace BurnItForFuel
             return Current.ProgramState == ProgramState.Playing ? Find.HiddenItemsManager.Hidden(t) : false;
         }
 
-        public static void DoThingFilterConfigWindow_Prefix()
-        {
-            Window pane;
-            Find.WindowStack.TryGetWindow(out pane);
-            Log.Message($"[BurnItForFuel] DoThingFilterConfigWindow called. {pane.GetType()}");
-            TTFilterWindowFlag = true;
-        }
+        //public static void DoThingFilterConfigWindow_Prefix()
+        //{
+        //    Window pane;
+        //    Find.WindowStack.TryGetWindow(out pane);
+        //    Log.Message($"[BurnItForFuel] DoThingFilterConfigWindow called. {pane.GetType()}");
+        //    TTFilterWindowFlag = true;
+        //}
 
         public static void DoThingFilterConfigWindow_Postfix()
         {
