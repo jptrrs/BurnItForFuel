@@ -64,23 +64,5 @@ namespace BurnItForFuel
             }
             return ratio;
         }
-
-        public static void RaiseTTFilterWindowFlag(object sender) // At this point, this should probably be an event!
-        {
-            Type originType = sender.GetType();
-            if (Current.ProgramState == ProgramState.Playing)
-            {
-                //Because yes, if there's another Tree Thing Filter window open, there's going to be a conflict and the UI will glitch.
-                if (!HarmonyPatches.TTFilterWindowFlag && originType == typeof(BurnItForFuelSettings))
-                {
-                    Find.WindowStack.WindowOfType<MainTabWindow_Inspect>().CloseOpenTab();
-                }
-                else if (originType == typeof(ITab_Fuel))
-                {
-                    HarmonyPatches.TTFilterCompSelectFuel = sender.ChangeType<ITab_Fuel>().SelFuelComp;
-                }
-            }
-            HarmonyPatches.TTFilterWindowFlag = true;
-        }
     }
 }

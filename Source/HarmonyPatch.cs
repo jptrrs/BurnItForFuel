@@ -2,7 +2,6 @@
 using RimWorld;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
@@ -50,11 +49,39 @@ namespace BurnItForFuel
 
             //Inserting extra buttons and a fuel power indicator to the Thing Filter config window.
             harmonyInstance.Patch(AccessTools.Method(typeof(ThingFilterUI), nameof(ThingFilterUI.DoThingFilterConfigWindow)),
-                /*new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Prefix))*/null, new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Postfix)), new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Transpiler)));
+               null, null, new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Transpiler)));
             harmonyInstance.Patch(AccessTools.Method(typeof(Listing_TreeThingFilter), nameof(Listing_TreeThingFilter.DoThingDef)),
                 new HarmonyMethod(patchType, nameof(DoThingDef_Prefix)), new HarmonyMethod(patchType, nameof(DoThingDef_Postfix)));
             harmonyInstance.Patch(AccessTools.Method(typeof(Listing_Tree), nameof(Listing_Tree.LabelLeft)),
                 new HarmonyMethod(patchType, nameof(LabelLeft_Prefix)));
+            harmonyInstance.Patch(AccessTools.Method(typeof(Window), nameof(Window.PreClose)),
+                null, new HarmonyMethod(patchType, nameof(PreClose_Postfix)));
+            ThingFilterExtras.FuelFilterOpen += FuelFilterWindowOpened; // register with an event
+        }
+
+        //Event handler that reacts to the opening of a Fuel Filter window.
+        public static void FuelFilterWindowOpened(object sender, EventArgs e)
+        {
+            Type originType = sender.GetType();
+            if (Current.ProgramState == ProgramState.Playing)
+            {
+                //Because yes, if there's another Tree Thing Filter window open, there's going to be a conflict and the UI will glitch.
+                if (!TTFilterWindowFlag && originType == typeof(BurnItForFuelSettings))
+                {
+                    Find.WindowStack.WindowOfType<MainTabWindow_Inspect>().CloseOpenTab();
+                }
+                else if (originType == typeof(ITab_Fuel))
+                {
+                    TTFilterCompSelectFuel = sender.ChangeType<ITab_Fuel>().SelFuelComp;
+                }
+            }
+            TTFilterWindowFlag = true;
+        }
+
+        public static void PreClose_Postfix(Window __instance)
+        {
+            if (TTFilterWindowFlag) TTFilterWindowFlag = false;
+
         }
 
         //Modifies the expected fuel count to account for the the targeted fuel during a refuel job. Can't be a regular Prefix/Postfix because all toils are delegates.
@@ -176,19 +203,6 @@ namespace BurnItForFuel
         public static bool HiddenItemsManager_Bypass(ThingDef t)
         {
             return Current.ProgramState == ProgramState.Playing ? Find.HiddenItemsManager.Hidden(t) : false;
-        }
-
-        //public static void DoThingFilterConfigWindow_Prefix()
-        //{
-        //    Window pane;
-        //    Find.WindowStack.TryGetWindow(out pane);
-        //    Log.Message($"[BurnItForFuel] DoThingFilterConfigWindow called. {pane.GetType()}");
-        //    TTFilterWindowFlag = true;
-        //}
-
-        public static void DoThingFilterConfigWindow_Postfix()
-        {
-            TTFilterWindowFlag = false;
         }
 
         //Insterts a call to MakeRoomForFootButtons() before the Rect.yMax assignment in DoThingFilterConfigWindow.

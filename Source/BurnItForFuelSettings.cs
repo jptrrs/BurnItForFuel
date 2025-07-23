@@ -101,7 +101,8 @@ namespace BurnItForFuel
 
             //Action
             float num = ColA_header.y;
-            SelectFuelHelper.RaiseTTFilterWindowFlag(this);
+            ThingFilterExtras.NotifyFuelFilterOpen(this);
+
             Widgets.Label(ColA_header, ref num, fuelsTitle, new TipSignal("fuelsToolTip"));
             ThingFilterUI.DoThingFilterConfigWindow(ColA_body, new ThingFilterUI.UIState(), masterFuelSettings, PossibleFuels, 1, null, DefDatabase<SpecialThingFilterDef>.AllDefs);
             Widgets.Label(ColB_header, option1);

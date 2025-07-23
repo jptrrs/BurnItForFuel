@@ -35,16 +35,15 @@ namespace BurnItForFuel
             }
         }
 
-        //public override void OnOpen()
-        //{
-        //    base.OnOpen();
-        //    SelectFuelHelper.RaiseTTFilterWindowFlag(this);
-        //}
-
-        public override void FillTab()
+        public override void OnOpen()
         {
-            SelectFuelHelper.RaiseTTFilterWindowFlag(this);
-            base.FillTab();
+            ThingFilterExtras.NotifyFuelFilterOpen(this);
+            base.OnOpen();
         }
+
+        //public override void FillTab()
+        //{
+        //    base.FillTab();
+        //}
     }
 }
