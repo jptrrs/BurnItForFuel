@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
+using Verse;
 
 namespace BurnItForFuel
 {
     public static class ThingFilterExtras //publisher
     {
+        public static float buttonHeight = 24f;
         public static event EventHandler FuelFilterOpen; //event
 
         public static void NotifyFuelFilterOpen(object sender)  //Raises the event
         {
-            Console.WriteLine("Process Started!");
-            // some code here..
             OnFuelFilterOpen(sender); //No event data
         }
 
@@ -22,5 +23,31 @@ namespace BurnItForFuel
             FuelFilterOpen?.Invoke(sender, EventArgs.Empty);
         }
 
+        public static void TTFilterExtraButtons(Rect rect, bool fuelTab = false)
+        {
+            float module = rect.width;
+            if (fuelTab) module /= 3f;
+            string resetButtonText = "Reset";
+            Rect rect1 = new Rect(rect.x, rect.y, module, rect.height);
+            if (Widgets.ButtonText(rect1, resetButtonText, true, true, true, null))
+            {
+                Console.WriteLine(resetButtonText);
+            }
+            if (!fuelTab) return;
+            string loadButtonText = "Load";
+            string saveButtonText = "Save";
+            Rect rect2 = new Rect(rect1);
+            rect2.x = rect1.xMax;
+            Rect rect3 = new Rect(rect2);
+            rect3.x = rect2.xMax;
+            if (Widgets.ButtonText(rect2, loadButtonText, true, true, true, null))
+            {
+                Console.WriteLine(loadButtonText);
+            }
+            if (Widgets.ButtonText(rect3, saveButtonText, true, true, true, null))
+            {
+                Console.WriteLine(saveButtonText);
+            }
+        }
     }
 }

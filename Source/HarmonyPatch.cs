@@ -15,8 +15,9 @@ namespace BurnItForFuel
     {
         private static readonly Type patchType = typeof(HarmonyPatches);
         private static ThingDef TTFilterLabelThingDef;
-        public static CompSelectFuel TTFilterCompSelectFuel;
-        public static bool TTFilterWindowFlag = false;
+        private static CompSelectFuel TTFilterCompSelectFuel;
+        private static bool TTFilterWindowFlag = false;
+        private static float? TTFilterWindowBorder;
 
         static HarmonyPatches()
         {
@@ -49,7 +50,7 @@ namespace BurnItForFuel
 
             //Inserting extra buttons and a fuel power indicator to the Thing Filter config window.
             harmonyInstance.Patch(AccessTools.Method(typeof(ThingFilterUI), nameof(ThingFilterUI.DoThingFilterConfigWindow)),
-               null, null, new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Transpiler)));
+                null, new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Postfix)), new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Transpiler)));
             harmonyInstance.Patch(AccessTools.Method(typeof(Listing_TreeThingFilter), nameof(Listing_TreeThingFilter.DoThingDef)),
                 new HarmonyMethod(patchType, nameof(DoThingDef_Prefix)), new HarmonyMethod(patchType, nameof(DoThingDef_Postfix)));
             harmonyInstance.Patch(AccessTools.Method(typeof(Listing_Tree), nameof(Listing_Tree.LabelLeft)),
@@ -153,19 +154,17 @@ namespace BurnItForFuel
 
         public static void LabelLeft_Prefix(Listing_TreeThingFilter __instance, float widthOffset)
         {
-            if (TTFilterLabelThingDef != null)
-            {
-                string text = TTFilterCompSelectFuel?.EquivalentFuelRatio(TTFilterLabelThingDef).ToStringPercent() ?? TTFilterLabelThingDef.UnitFuelValue(false).ToString();
-                Rect rect = new Rect(0f, __instance.curY, __instance.LabelWidth + widthOffset, 40f);
-                Text.Font = GameFont.Small;
-                Text.Anchor = TextAnchor.UpperRight;
-                GUI.color = new Color(0.5f, 0.5f, 0.1f);
-                Widgets.Label(rect, text);
-                widthOffset -= Text.CalcSize(text).x;
-                GenUI.ResetLabelAlign();
-                Text.Font = GameFont.Small;
-                GUI.color = Color.white;
-            }
+            if (TTFilterLabelThingDef == null) return;
+            string text = TTFilterCompSelectFuel?.EquivalentFuelRatio(TTFilterLabelThingDef).ToStringPercent() ?? TTFilterLabelThingDef.UnitFuelValue(false).ToString();
+            Rect rect = new Rect(0f, __instance.curY, __instance.LabelWidth + widthOffset, 40f);
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.UpperRight;
+            GUI.color = new Color(0.5f, 0.5f, 0.1f);
+            Widgets.Label(rect, text);
+            widthOffset -= Text.CalcSize(text).x;
+            GenUI.ResetLabelAlign();
+            Text.Font = GameFont.Small;
+            GUI.color = Color.white;
         }
 
         private static bool GetFuelCountToFullyRefuel_Prefix(CompRefuelable __instance, ref int __result)
@@ -212,13 +211,25 @@ namespace BurnItForFuel
             codeMatcher.End()
                 .MatchStartBackwards(new CodeMatch(new CodeInstruction(OpCodes.Call, AccessTools.PropertySetter(typeof(Rect), nameof(Rect.yMax)))))
                 .MatchStartBackwards(new CodeMatch(new CodeInstruction(OpCodes.Ldc_R4))).Advance(1)
-                .Insert(new CodeMatch(CodeMatch.Call(typeof(HarmonyPatches), nameof(MakeRoomForFootButtons), new Type[] {typeof(float)})));
+                .Insert(new CodeMatch(CodeMatch.Call(typeof(HarmonyPatches), nameof(MakeRoomForFootbar), new Type[] {typeof(float)})));
             return codeMatcher.Instructions();
         }
 
-        public static float MakeRoomForFootButtons(float original)
+        public static float MakeRoomForFootbar(float original)
         {
-            return TTFilterWindowFlag ? BurnItForFuelSettings.buttonHeight : original;
+            if (TTFilterWindowBorder == null) TTFilterWindowBorder = original;
+            float result = original;
+            if (TTFilterWindowFlag) result += ThingFilterExtras.buttonHeight;
+            return result;
+        }
+
+        public static void DoThingFilterConfigWindow_Postfix(Rect rect)
+        {
+            if (!TTFilterWindowFlag || TTFilterWindowBorder == null) return;
+            float padding = TTFilterWindowBorder.value / 2;
+            Rect footbar = new Rect(rect.x + padding, rect.yMax + padding, rect.width - TTFilterWindowBorder.value, ThingFilterExtras.buttonHeight);
+            bool forFuelTab = TTFilterCompSelectFuel != null;
+            ThingFilterExtras.TTFilterExtraButtons(footbar, forFuelTab);
         }
 
         public static void CanRefuel_Postfix(object __instance, Pawn pawn, Thing t, bool forced, ref bool __result)

@@ -40,10 +40,5 @@ namespace BurnItForFuel
             ThingFilterExtras.NotifyFuelFilterOpen(this);
             base.OnOpen();
         }
-
-        //public override void FillTab()
-        //{
-        //    base.FillTab();
-        //}
     }
 }
