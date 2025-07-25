@@ -14,7 +14,6 @@ namespace BurnItForFuel
         private float baseFuelValue;
         private bool? fuelSettingsIncludeBaseFuel;
         private CompRefuelable siblingComp;
-        private static List<ThingDef> nativeTargetFuelLevel = new List<ThingDef>();
 
         public float BaseFuelValue
         {
@@ -30,7 +29,6 @@ namespace BurnItForFuel
                 return baseFuelValue;
             }
         }
-
         public bool FuelSettingsIncludeBaseFuel //e.g: Dubs Hygiene Burning Pit doesn't. 
         {
             get
@@ -48,7 +46,6 @@ namespace BurnItForFuel
                 return false;
             }
         }
-
         public CompProperties_SelectFuel Props
         {
             get
@@ -56,7 +53,6 @@ namespace BurnItForFuel
                 return (CompProperties_SelectFuel)props;
             }
         }
-
         public CompRefuelable SiblingComp
         {
             get
@@ -75,8 +71,10 @@ namespace BurnItForFuel
         public bool StorageTabVisible { get; set; }
 
         private ThingFilter BaseFuelSettings => SiblingComp.Props.fuelFilter;
-
+        private bool ClearedForFuelSelection => settings.enableWithNonFuel || FuelSettingsIncludeBaseFuel;
         private ThingFilter UserFuelSettings => BurnItForFuelMod.settings.masterFuelSettings;
+        private bool SafeToMixFuels => parent.def.passability != Traversability.Impassable && !parent.def.building.canPlaceOverWall;
+        private static BurnItForFuelSettings settings => BurnItForFuelMod.settings;
 
         public override IEnumerable<Gizmo> CompGetGizmosExtra()
         {
@@ -187,51 +185,41 @@ namespace BurnItForFuel
         {
             if (SiblingComp == null) return;
             var props = SiblingComp.Props;
+            var defaults = parent.def.GetCompProperties<CompProperties_Refuelable>();
 
             //Configurable Target Fuel Level
-            if (!nativeTargetFuelLevel.Contains(parent.def) && props.targetFuelLevelConfigurable)
+            if (settings.enableTargetFuelLevel)
             {
-                nativeTargetFuelLevel.Add(parent.def);
+                props.targetFuelLevelConfigurable = true;
+                if (props.initialConfigurableTargetFuelLevel == 0) props.initialConfigurableTargetFuelLevel = props.fuelCapacity;
             }
-            props.targetFuelLevelConfigurable = true;
-            if (props.initialConfigurableTargetFuelLevel == 0)
+            else
             {
-                props.initialConfigurableTargetFuelLevel = props.fuelCapacity;
+                props.targetFuelLevelConfigurable = defaults.targetFuelLevelConfigurable;
+                props.initialConfigurableTargetFuelLevel = defaults.initialConfigurableTargetFuelLevel;
             }
 
             //Fuel Mixing
-            if (SafeToMixFuels())
+            if (!ClearedForFuelSelection)
+            {
+                props.atomicFueling = defaults.atomicFueling;
+                StorageTabVisible = false;
+                props.canEjectFuel = defaults.canEjectFuel;
+                Log.Message($"[BurnItForFuel] {BaseFuelSettings.ToString()} is used by the {parent.Label}, but it isn't marked as fuel. Fuel tab disabled. Change the settings to prevent this.");
+            }
+            else if (SafeToMixFuels)
             {
                 props.atomicFueling = true;
                 StorageTabVisible = true;
+                props.canEjectFuel = false; //It would take some sort of registering what kinds of fuel were loaded. 
             }
-            else StorageTabVisible = false;
-
-            //Testing
-            props.canEjectFuel = true;
-
         }
 
         public void SetupFuelSettings()
         {
             FuelSettings = new StorageSettings(this);
             FuelSettings.filter.SetDisallowAll(UserFuelSettings.AllowedThingDefs);
-            if (BaseFuelSettings != null)
-            {
-                //if ((!FuelSettingsIncludeBaseFuel || IsVehicle()) && !SiblingComp.Props.atomicFueling)
-                //{
-                //This is actually done by SetUpFuelFeatures, warning is here so it only shows once.
-                if (!FuelSettingsIncludeBaseFuel)
-                {
-                    Log.Message($"[BurnItForFuel] {BaseFuelSettings.ToString()} is used by the {parent.Label}, but it isn't marked as fuel. Fuel tab disabled. Change the settings to prevent this.");
-                }
-                //if (IsVehicle())
-                //{
-                //    Log.Message($"[BurnItForFuel] {parent.LabelCap} looks like its a vehicle, so we're preventing fuel mixing to protect your engines. Fuel tab disabled.  Change the settings to prevent this.");
-                //} 
-                //}
-                FuelSettings.filter.SetAllowAll(BaseFuelSettings);
-            }
+            if (BaseFuelSettings != null) FuelSettings.filter.SetAllowAll(BaseFuelSettings);
         }
 
         public void ValidateFuelSettings()
@@ -241,27 +229,19 @@ namespace BurnItForFuel
             {
                 SetUpFuelFeatures();
             }
-            if (SafeToMixFuels())
-            {
-                //foreach (ThingDef def in (from d in FuelSettings.filter.AllowedThingDefs
-                //                          where !GetParentStoreSettings().filter.Allows(d)
-                //                          select d).ToList())
+            //if (SafeToMixFuels)
+            //{
                 foreach (ThingDef def in FuelSettings.filter.AllowedThingDefs.Where(d => !GetParentStoreSettings().filter.Allows(d)))
                 {
                     FuelSettings.filter.SetAllow(def, false);
                     Log.Warning($"[BurnItForFuel] {def.defName} is no longer fuel, so it was removed from the {parent} fuel settings.");
                 }
-            }
+            //}
         }
 
         //private bool IsVehicle()
         //{
         //    return nativeTargetFuelLevel.Contains(parent.def) && SiblingComp.Props.consumeFuelOnlyWhenUsed;
         //}
-
-        private bool SafeToMixFuels()
-        {
-            return FuelSettingsIncludeBaseFuel && parent.def.passability != Traversability.Impassable && !parent.def.building.canPlaceOverWall;// && !IsVehicle();
-        }
     }
 }

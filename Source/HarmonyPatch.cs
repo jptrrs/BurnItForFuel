@@ -18,6 +18,7 @@ namespace BurnItForFuel
         private static CompSelectFuel TTFilterCompSelectFuel;
         private static bool TTFilterWindowFlag = false;
         private static float? TTFilterWindowBorder;
+        private static BurnItForFuelSettings Settings => BurnItForFuelMod.settings;
 
         static HarmonyPatches()
         {
@@ -50,9 +51,9 @@ namespace BurnItForFuel
 
             //Inserting extra buttons and a fuel power indicator to the Thing Filter config window.
             harmonyInstance.Patch(AccessTools.Method(typeof(ThingFilterUI), nameof(ThingFilterUI.DoThingFilterConfigWindow)),
-                null, new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Postfix)), new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Transpiler)));
+                new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Prefix)), new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Postfix)), new HarmonyMethod(patchType, nameof(DoThingFilterConfigWindow_Transpiler)));
             harmonyInstance.Patch(AccessTools.Method(typeof(Listing_TreeThingFilter), nameof(Listing_TreeThingFilter.DoThingDef)),
-                new HarmonyMethod(patchType, nameof(DoThingDef_Prefix)), new HarmonyMethod(patchType, nameof(DoThingDef_Postfix)));
+                new HarmonyMethod(patchType, nameof(DoThingDef_Prefix)), new HarmonyMethod(patchType, nameof(DoThingDef_Postfix)), new HarmonyMethod(patchType, nameof(DoThingDef_Transpiler)));
             harmonyInstance.Patch(AccessTools.Method(typeof(Listing_Tree), nameof(Listing_Tree.LabelLeft)),
                 new HarmonyMethod(patchType, nameof(LabelLeft_Prefix)));
             harmonyInstance.Patch(AccessTools.Method(typeof(Window), nameof(Window.PreClose)),
@@ -152,14 +153,31 @@ namespace BurnItForFuel
             TTFilterLabelThingDef = null;
         }
 
+        //Replaces Find.HiddenItemsManager.Hidden(ThingDef) with HiddenItemsManager_bypass(ThingDef) on the targeted methods.
+        static IEnumerable<CodeInstruction> DoThingDef_Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            var codeMatcher = new CodeMatcher(instructions);
+            codeMatcher.MatchStartForward(new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(Listing_Lines), "lineHeight"))).Advance(1)
+                .SetInstruction(new CodeMatch(CodeMatch.Call(typeof(HarmonyPatches), nameof(DisableInvalidOnThingFilter))));
+            return codeMatcher.Instructions();
+        }
+
+        public static bool DisableInvalidOnThingFilter()
+        {
+            if (TTFilterLabelThingDef == null) return false;
+            return TTFilterLabelThingDef.UnitFuelValue() == 0f;
+        }
+
         public static void LabelLeft_Prefix(Listing_TreeThingFilter __instance, float widthOffset)
         {
-            if (TTFilterLabelThingDef == null) return;
-            string text = TTFilterCompSelectFuel?.EquivalentFuelRatio(TTFilterLabelThingDef).ToStringPercent() ?? TTFilterLabelThingDef.UnitFuelValue(false).ToString();
+            if (TTFilterLabelThingDef == null || (TTFilterCompSelectFuel == null && !Settings.showFuelPotential)) return;
+            var ratio = TTFilterCompSelectFuel?.EquivalentFuelRatio(TTFilterLabelThingDef) ?? TTFilterLabelThingDef.AbsoluteFuelRatio();
+            if (ratio == 0f) return;
+            string text = ratio.ToStringPercent();
             Rect rect = new Rect(0f, __instance.curY, __instance.LabelWidth + widthOffset, 40f);
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperRight;
-            GUI.color = new Color(0.5f, 0.5f, 0.1f);
+            GUI.color = new Color(1f, 0.6f, 0.08f); //light orange
             Widgets.Label(rect, text);
             widthOffset -= Text.CalcSize(text).x;
             GenUI.ResetLabelAlign();
@@ -223,13 +241,20 @@ namespace BurnItForFuel
             return result;
         }
 
-        public static void DoThingFilterConfigWindow_Postfix(Rect rect)
+        public static void DoThingFilterConfigWindow_Prefix(byte __state)
+        {
+            if (!TTFilterWindowFlag || TTFilterWindowBorder == null) return;
+            __state = Settings.FuelPotentialValuesState;
+        }
+
+        public static void DoThingFilterConfigWindow_Postfix(Rect rect, byte __state)
         {
             if (!TTFilterWindowFlag || TTFilterWindowBorder == null) return;
             float padding = TTFilterWindowBorder.value / 2;
             Rect footbar = new Rect(rect.x + padding, rect.yMax + padding, rect.width - TTFilterWindowBorder.value, ThingFilterExtras.buttonHeight);
             bool forFuelTab = TTFilterCompSelectFuel != null;
             ThingFilterExtras.TTFilterExtraButtons(footbar, forFuelTab);
+            if (Settings.FuelPotentialValuesState != __state) SelectFuelHelper.ResetFuelValueCache();
         }
 
         public static void CanRefuel_Postfix(object __instance, Pawn pawn, Thing t, bool forced, ref bool __result)

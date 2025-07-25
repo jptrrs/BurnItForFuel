@@ -8,8 +8,9 @@ namespace BurnItForFuel
     internal static class SelectFuelHelper
     {
         public static Dictionary<ThingDef, float> fuelValueCache = new Dictionary<ThingDef, float>();
+        private static BurnItForFuelSettings Settings => BurnItForFuelMod.settings;
 
-        public static float UnitFuelValue(this ThingDef def, bool showError = true)
+        public static float UnitFuelValue(this ThingDef def, bool showError = false)
         {
             if (fuelValueCache.ContainsKey(def)) return fuelValueCache[def];
             float flamm, mass;
@@ -19,7 +20,12 @@ namespace BurnItForFuel
             return fuelValue;
         }
 
-        public static bool ValidateAsFuel(this ThingDef def, out float flamm, out float mass, bool showError = true)
+        public static void ResetFuelValueCache()
+        {
+            fuelValueCache.Clear();
+        }
+
+        public static bool ValidateAsFuel(this ThingDef def, out float flamm, out float mass, bool showError = false)
         {
             string errorMsg;
             if (def.statBases == null)
@@ -28,14 +34,14 @@ namespace BurnItForFuel
                 flamm = mass = 0f;
                 goto Zero;
             }
-            flamm = def.GetStatValueAbstract(StatDefOf.Flammability);
+            flamm = Settings.useFlamm ? def.GetStatValueAbstract(StatDefOf.Flammability) : 1f;
             if (flamm <= 0f)
             {
                 errorMsg = "being inflammable";
                 mass = 0f;
                 goto Zero;
             }
-            mass = def.GetStatValueAbstract(StatDefOf.Mass);
+            mass = Settings.useMass ? def.GetStatValueAbstract(StatDefOf.Mass): 1f;
             if (mass <= 0f)
             {
                 errorMsg = "having no mass";
@@ -51,17 +57,17 @@ namespace BurnItForFuel
         public static bool ValidateAsFuel(this ThingDef def)
         {
             float flamm, mass;
-            return ValidateAsFuel(def, out flamm, out mass, false);
+            return ValidateAsFuel(def, out flamm, out mass);
         }
 
-        public static float FuelEquivalenceRatio(ThingDef standard, ThingDef sample)
+        public static float AbsoluteFuelRatio(this ThingDef def)
         {
-            var ratio = sample.UnitFuelValue() / standard.UnitFuelValue();
-            if (ratio <= 0f)
-            {
-                Log.Error("[BurnItForFuel] " + sample.defName + " has a fuel equivalence ratio of 0 or less, which is invalid.");
-                return 0f;
-            }
+            var ratio = def.UnitFuelValue() / Settings.standardFuel.UnitFuelValue();
+            //if (ratio <= 0f)
+            //{
+            //    Log.Error($"[BurnItForFuel] Invalid value: {def.defName} has a fuel equivalence ratio of 0 or less when compared to {Settings.standardFuel.label}.");
+            //    return 0f;
+            //}
             return ratio;
         }
     }

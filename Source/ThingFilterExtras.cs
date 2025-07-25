@@ -12,6 +12,7 @@ namespace BurnItForFuel
     {
         public static float buttonHeight = 24f;
         public static event EventHandler FuelFilterOpen; //event
+        private static BurnItForFuelSettings settings => BurnItForFuelMod.settings;
 
         public static void NotifyFuelFilterOpen(object sender)  //Raises the event
         {
@@ -25,9 +26,8 @@ namespace BurnItForFuel
 
         public static void TTFilterExtraButtons(Rect rect, bool fuelTab = false)
         {
-            float module = rect.width;
-            if (fuelTab) module /= 3f;
-            string resetButtonText = "Reset";
+            float module = rect.width /= 3f;
+            string resetButtonText = "ResetButton".Translate();
             Rect rect1 = new Rect(rect.x, rect.y, module, rect.height);
             if (Widgets.ButtonText(rect1, resetButtonText, true, true, true, null))
             {
@@ -35,9 +35,13 @@ namespace BurnItForFuel
                 //
                 //filter = defaultFilter
             }
-            if (!fuelTab) return;
-            string loadButtonText = "Load";
-            string saveButtonText = "Save";
+            if (!fuelTab)
+            {
+                settings.TTFilterCheckbox(new Rect(rect1.xMax, rect1.y, module * 2, rect1.height), buttonHeight);
+                return;
+            }
+            string loadButtonText = "LoadGameButton".Translate();
+            string saveButtonText = "SaveGameButton".Translate();
             Rect rect2 = new Rect(rect1);
             rect2.x = rect1.xMax;
             Rect rect3 = new Rect(rect2);
