@@ -114,3 +114,11 @@ namespace BurnItForFuel
         }
     }
 }
+
+//Options:
+
+//- Consider Mass: Items with zero mass will be ignored. default is true.
+//- Consider Flammability: Non-flammable items will be ignored. default is true.
+//- Enable configurable target fuel level for all objects using fuel selection. default is true.
+//- Allow fuel selection for fueled objects that rely on non-fuel resources. default is false. if true: their default fuel will be available only for them.
+//- (filter box) Show fuel potential.

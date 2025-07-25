@@ -222,13 +222,13 @@ namespace BurnItForFuel
                 //{
                 //This is actually done by SetUpFuelFeatures, warning is here so it only shows once.
                 if (!FuelSettingsIncludeBaseFuel)
-                    {
-                        Log.Message($"[BurnItForFuel] {BaseFuelSettings.ToString()} is used by the {parent.Label}, but it isn't marked as fuel. Fuel tab disabled. Change the settings to prevent this.");
-                    }
-                    if (IsVehicle())
-                    {
-                        Log.Message($"[BurnItForFuel] {parent.LabelCap} looks like its a vehicle, so we're preventing fuel mixing to protect your engines. Fuel tab disabled.  Change the settings to prevent this.");
-                } 
+                {
+                    Log.Message($"[BurnItForFuel] {BaseFuelSettings.ToString()} is used by the {parent.Label}, but it isn't marked as fuel. Fuel tab disabled. Change the settings to prevent this.");
+                }
+                //if (IsVehicle())
+                //{
+                //    Log.Message($"[BurnItForFuel] {parent.LabelCap} looks like its a vehicle, so we're preventing fuel mixing to protect your engines. Fuel tab disabled.  Change the settings to prevent this.");
+                //} 
                 //}
                 FuelSettings.filter.SetAllowAll(BaseFuelSettings);
             }
@@ -254,14 +254,14 @@ namespace BurnItForFuel
             }
         }
 
-        private bool IsVehicle()
-        {
-            return nativeTargetFuelLevel.Contains(parent.def) && SiblingComp.Props.consumeFuelOnlyWhenUsed;
-        }
+        //private bool IsVehicle()
+        //{
+        //    return nativeTargetFuelLevel.Contains(parent.def) && SiblingComp.Props.consumeFuelOnlyWhenUsed;
+        //}
 
         private bool SafeToMixFuels()
         {
-            return FuelSettingsIncludeBaseFuel && parent.def.passability != Traversability.Impassable && !parent.def.building.canPlaceOverWall && !IsVehicle();
+            return FuelSettingsIncludeBaseFuel && parent.def.passability != Traversability.Impassable && !parent.def.building.canPlaceOverWall;// && !IsVehicle();
         }
     }
 }

@@ -32,6 +32,8 @@ namespace BurnItForFuel
             if (Widgets.ButtonText(rect1, resetButtonText, true, true, true, null))
             {
                 Console.WriteLine(resetButtonText);
+                //
+                //filter = defaultFilter
             }
             if (!fuelTab) return;
             string loadButtonText = "Load";

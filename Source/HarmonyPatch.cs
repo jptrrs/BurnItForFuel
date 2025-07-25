@@ -216,7 +216,7 @@ namespace BurnItForFuel
         }
 
         public static float MakeRoomForFootbar(float original)
-        {
+        {   
             if (TTFilterWindowBorder == null) TTFilterWindowBorder = original;
             float result = original;
             if (TTFilterWindowFlag) result += ThingFilterExtras.buttonHeight;
