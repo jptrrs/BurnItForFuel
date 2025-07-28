@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RimWorld;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -54,6 +55,21 @@ namespace BurnItForFuel
             {
                 Console.WriteLine(saveButtonText);
             }
+        }
+
+        public static float InsertFuelPowerTag(Listing_TreeThingFilter __instance, float widthOffset, float ratio)
+        {
+            string text = ratio.ToStringPercent();
+            Rect rect = new Rect(0f, __instance.curY, __instance.LabelWidth + widthOffset, 40f);
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.UpperRight;
+            GUI.color = new Color(1f, 0.6f, 0.08f); //light orange
+            Widgets.Label(rect, text);
+            widthOffset -= Text.CalcSize(text).x;
+            GenUI.ResetLabelAlign();
+            Text.Font = GameFont.Small;
+            GUI.color = Color.white;
+            return widthOffset;
         }
     }
 }

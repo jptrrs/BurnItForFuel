@@ -160,21 +160,12 @@ namespace BurnItForFuel
             return TTFilterLabelThingDef.UnitFuelValue() == 0f;
         }
 
-        public static void LabelLeft_Prefix(Listing_TreeThingFilter __instance, float widthOffset)
+        public static void LabelLeft_Prefix(Listing_TreeThingFilter __instance, ref float widthOffset)
         {
             if (TTFilterLabelThingDef == null || (!TTFilterOnTab && !Settings.showFuelPotential)) return;
-            var ratio = FuelTab.SelFuelComp?.EquivalentFuelRatio(TTFilterLabelThingDef) ?? TTFilterLabelThingDef.AbsoluteFuelRatio();
+            var ratio = FuelTab?.SelFuelComp?.EquivalentFuelRatio(TTFilterLabelThingDef) ?? TTFilterLabelThingDef.AbsoluteFuelRatio();
             if (ratio == 0f) return;
-            string text = ratio.ToStringPercent();
-            Rect rect = new Rect(0f, __instance.curY, __instance.LabelWidth + widthOffset, 40f);
-            Text.Font = GameFont.Small;
-            Text.Anchor = TextAnchor.UpperRight;
-            GUI.color = new Color(1f, 0.6f, 0.08f); //light orange
-            Widgets.Label(rect, text);
-            widthOffset -= Text.CalcSize(text).x;
-            GenUI.ResetLabelAlign();
-            Text.Font = GameFont.Small;
-            GUI.color = Color.white;
+            widthOffset = ThingFilterExtras.InsertFuelPowerTag(__instance, widthOffset, ratio);
         }
 
         private static bool GetFuelCountToFullyRefuel_Prefix(CompRefuelable __instance, ref int __result)
