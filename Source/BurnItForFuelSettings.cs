@@ -56,7 +56,7 @@ namespace BurnItForFuel
             if (Scribe.mode == LoadSaveMode.Saving && masterFuelSettings != null)
             {
                 ExposedList = masterFuelSettings.AllowedThingDefs.Select(x => x.defName).ToList();
-                SettingsChanged();
+                if (Current.ProgramState == ProgramState.Playing) RedistributeFuelSettings();
             }
             Scribe_Collections.Look(ref ExposedList, "masterFuelSettings", LookMode.Value);
             Scribe_Values.Look(ref useMass, "useMass", true);
@@ -83,9 +83,8 @@ namespace BurnItForFuel
             return true;
         }
 
-        public void SettingsChanged()
+        public void RedistributeFuelSettings()
         {
-            if (Current.ProgramState != ProgramState.Playing) return;
             foreach (Map map in Find.Maps)
             {
                 List<Thing> affected = map.listerThings.ThingsMatching(ThingRequest.ForGroup(ThingRequestGroup.Refuelable));
@@ -140,7 +139,6 @@ namespace BurnItForFuel
             ColB_body.height -= ColB_header.height;
 
             //action!
-            ThingFilterExtras.NotifyFuelFilterOpen(this);
             Widgets.Label(ColA_header, ref num, fuels_label, new TipSignal(fuels_tt));
             ThingFilterUI.DoThingFilterConfigWindow(ColA_body, new ThingFilterUI.UIState(), masterFuelSettings, PossibleFuels, 1, null, DefDatabase<SpecialThingFilterDef>.AllDefs, true, true);
             Widgets.Label(ColB_header, calculation_label);

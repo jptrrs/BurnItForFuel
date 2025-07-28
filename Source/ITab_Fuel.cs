@@ -5,6 +5,8 @@ namespace BurnItForFuel
 {
     public class ITab_Fuel : ITab_Storage
     {
+        object lastSelObject;
+
         public ITab_Fuel()
         {
             labelKey = "TabFuel";
@@ -37,8 +39,32 @@ namespace BurnItForFuel
 
         public override void OnOpen()
         {
-            ThingFilterExtras.NotifyFuelFilterOpen(this);
+            lastSelObject = SelObject;
+            ThingFilterExtras.NotifyFuelFilterOpen(this, true);
             base.OnOpen();
+        }
+
+        public override void ExtraOnGUI()
+        {
+            if (SelObject != lastSelObject)
+            {
+                lastSelObject = SelObject;
+                ThingFilterExtras.NotifyFuelFilterOpen(this, true);
+            }
+            base.ExtraOnGUI();
+        }
+
+        public override void CloseTab()
+        {
+            base.CloseTab();
+            lastSelObject = null;
+            ThingFilterExtras.NotifyFuelFilterOpen(this, false);
+        }
+
+        public override void Notify_ClickOutsideWindow()
+        {
+            ThingFilterExtras.NotifyFuelFilterOpen(this, false);
+            base.Notify_ClickOutsideWindow();
         }
     }
 }

@@ -13,13 +13,15 @@ namespace BurnItForFuel
     [StaticConstructorOnStartup]
     public static class HarmonyPatches
     {
-        private static readonly Type patchType = typeof(HarmonyPatches);
-        private static ThingDef TTFilterLabelThingDef;
-        private static CompSelectFuel TTFilterCompSelectFuel;
         private static bool TTFilterWindowFlag = false;
         private static float? TTFilterWindowBorder;
+        private static ITab_Fuel FuelTab;
+        private static readonly Type patchType = typeof(HarmonyPatches);
+        private static ThingDef TTFilterLabelThingDef;
+        private static bool TTFilterExtrasAllowed => TTFilterWindowFlag || TTFilterOnTab;
+        private static bool TTFilterOnSettings => TTFilterWindowFlag && !TTFilterOnTab;
+        private static bool TTFilterOnTab => FuelTab != null;
         private static BurnItForFuelSettings Settings => BurnItForFuelMod.settings;
-
         static HarmonyPatches()
         {
             //Harmony.DEBUG = true;
@@ -56,34 +58,24 @@ namespace BurnItForFuel
                 new HarmonyMethod(patchType, nameof(DoThingDef_Prefix)), new HarmonyMethod(patchType, nameof(DoThingDef_Postfix)), new HarmonyMethod(patchType, nameof(DoThingDef_Transpiler)));
             harmonyInstance.Patch(AccessTools.Method(typeof(Listing_Tree), nameof(Listing_Tree.LabelLeft)),
                 new HarmonyMethod(patchType, nameof(LabelLeft_Prefix)));
-            harmonyInstance.Patch(AccessTools.Method(typeof(Window), nameof(Window.PreClose)),
-                null, new HarmonyMethod(patchType, nameof(PreClose_Postfix)));
             ThingFilterExtras.FuelFilterOpen += FuelFilterWindowOpened; // register with an event
         }
 
         //Event handler that reacts to the opening of a Fuel Filter window.
-        public static void FuelFilterWindowOpened(object sender, EventArgs e)
+        public static void FuelFilterWindowOpened(object sender, bool open)
         {
-            Type originType = sender.GetType();
-            if (Current.ProgramState == ProgramState.Playing)
+            bool fromTab = false;
+            if (sender is ITab_Fuel tab)
             {
-                //Because yes, if there's another Tree Thing Filter window open, there's going to be a conflict and the UI will glitch.
-                if (!TTFilterWindowFlag && originType == typeof(BurnItForFuelSettings))
-                {
-                    Find.WindowStack.WindowOfType<MainTabWindow_Inspect>().CloseOpenTab();
-                }
-                else if (originType == typeof(ITab_Fuel))
-                {
-                    TTFilterCompSelectFuel = sender.ChangeType<ITab_Fuel>().SelFuelComp;
-                }
+                FuelTab = tab; //If necessary, will be cleared later on DoThingFilterConfigWindow_Prefix. This prevents an open tab from glitching if unfocused but still open. 
+                fromTab = true;
             }
-            TTFilterWindowFlag = true;
-        }
-
-        public static void PreClose_Postfix(Window __instance)
-        {
-            if (TTFilterWindowFlag) TTFilterWindowFlag = false;
-
+            else FuelTab = null;
+            TTFilterWindowFlag = open;
+            if (!fromTab && open && Current.ProgramState == ProgramState.Playing) //This frees us from having to draw different sets of extra buttons for different panels.
+            {
+                Find.WindowStack.WindowOfType<MainTabWindow_Inspect>()?.CloseOpenTab();
+            }
         }
 
         //Modifies the expected fuel count to account for the the targeted fuel during a refuel job. Can't be a regular Prefix/Postfix because all toils are delegates.
@@ -170,8 +162,8 @@ namespace BurnItForFuel
 
         public static void LabelLeft_Prefix(Listing_TreeThingFilter __instance, float widthOffset)
         {
-            if (TTFilterLabelThingDef == null || (TTFilterCompSelectFuel == null && !Settings.showFuelPotential)) return;
-            var ratio = TTFilterCompSelectFuel?.EquivalentFuelRatio(TTFilterLabelThingDef) ?? TTFilterLabelThingDef.AbsoluteFuelRatio();
+            if (TTFilterLabelThingDef == null || (!TTFilterOnTab && !Settings.showFuelPotential)) return;
+            var ratio = FuelTab.SelFuelComp?.EquivalentFuelRatio(TTFilterLabelThingDef) ?? TTFilterLabelThingDef.AbsoluteFuelRatio();
             if (ratio == 0f) return;
             string text = ratio.ToStringPercent();
             Rect rect = new Rect(0f, __instance.curY, __instance.LabelWidth + widthOffset, 40f);
@@ -237,24 +229,23 @@ namespace BurnItForFuel
         {   
             if (TTFilterWindowBorder == null) TTFilterWindowBorder = original;
             float result = original;
-            if (TTFilterWindowFlag) result += ThingFilterExtras.buttonHeight;
+            if (TTFilterExtrasAllowed) result += ThingFilterExtras.buttonHeight;
             return result;
         }
 
-        public static void DoThingFilterConfigWindow_Prefix(byte __state)
+        public static void DoThingFilterConfigWindow_Prefix(object __instance, Rect rect, byte __state)
         {
-            if (!TTFilterWindowFlag || TTFilterWindowBorder == null) return;
-            __state = Settings.FuelPotentialValuesState;
+            if (TTFilterOnSettings) __state = Settings.FuelPotentialValuesState; //Records calculation settings state if we're on the main settings window.
+            else if (TTFilterOnTab && !FuelTab.IsVisible && !TTFilterWindowFlag) FuelTab = null;
         }
 
         public static void DoThingFilterConfigWindow_Postfix(Rect rect, byte __state)
         {
-            if (!TTFilterWindowFlag || TTFilterWindowBorder == null) return;
+            if (!TTFilterExtrasAllowed) return; //Acts only if called for.
             float padding = TTFilterWindowBorder.value / 2;
             Rect footbar = new Rect(rect.x + padding, rect.yMax + padding, rect.width - TTFilterWindowBorder.value, ThingFilterExtras.buttonHeight);
-            bool forFuelTab = TTFilterCompSelectFuel != null;
-            ThingFilterExtras.TTFilterExtraButtons(footbar, forFuelTab);
-            if (Settings.FuelPotentialValuesState != __state) SelectFuelHelper.ResetFuelValueCache();
+            ThingFilterExtras.TTFilterExtraButtons(footbar, TTFilterOnTab);
+            if (TTFilterOnSettings && Settings.FuelPotentialValuesState != __state) SelectFuelHelper.ResetFuelValueCache(); //Calls for the fuel values updating if needed & we're on the main settings window.
         }
 
         public static void CanRefuel_Postfix(object __instance, Pawn pawn, Thing t, bool forced, ref bool __result)

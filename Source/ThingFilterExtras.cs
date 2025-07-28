@@ -11,17 +11,17 @@ namespace BurnItForFuel
     public static class ThingFilterExtras //publisher
     {
         public static float buttonHeight = 24f;
-        public static event EventHandler FuelFilterOpen; //event
-        private static BurnItForFuelSettings settings => BurnItForFuelMod.settings;
+        public static event EventHandler<bool> FuelFilterOpen; //event
+        private static BurnItForFuelSettings Settings => BurnItForFuelMod.settings;
 
-        public static void NotifyFuelFilterOpen(object sender)  //Raises the event
+        public static void NotifyFuelFilterOpen(object sender, bool open)  //Raises the event
         {
-            OnFuelFilterOpen(sender); //No event data
+            OnFuelFilterOpen(sender, open); //No event data
         }
 
-        public static void OnFuelFilterOpen(object sender) //This will call all the event handler methods registered with the ProcessCompleted event
+        public static void OnFuelFilterOpen(object sender, bool open) //This will call all the event handler methods registered with the ProcessCompleted event
         {
-            FuelFilterOpen?.Invoke(sender, EventArgs.Empty);
+            FuelFilterOpen?.Invoke(sender, open);
         }
 
         public static void TTFilterExtraButtons(Rect rect, bool fuelTab = false)
@@ -37,7 +37,7 @@ namespace BurnItForFuel
             }
             if (!fuelTab)
             {
-                settings.TTFilterCheckbox(new Rect(rect1.xMax, rect1.y, module * 2, rect1.height), buttonHeight);
+                Settings.TTFilterCheckbox(new Rect(rect1.xMax, rect1.y, module * 2, rect1.height), buttonHeight);
                 return;
             }
             string loadButtonText = "LoadGameButton".Translate();
