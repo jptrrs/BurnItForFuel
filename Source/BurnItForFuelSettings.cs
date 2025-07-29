@@ -1,6 +1,8 @@
 ﻿using RimWorld;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Xml.Serialization;
 using UnityEngine;
 using Verse;
 
@@ -8,17 +10,24 @@ namespace BurnItForFuel
 {
     public class BurnItForFuelSettings : ModSettings
     {
+        public ThingFilter
+            masterFuelSettings = new ThingFilter(),
+            defaultFuelSettings = new ThingFilter();
+
+        public ThingDef standardFuel;
+
         public bool
-            useMass = true,
+                            useMass = true,
             useFlamm = true,
             enableTargetFuelLevel = true,
             enableWithNonFuel = false,
             showFuelPotential = false,
             showInvalids = false; //for dev mode, to see what fuels are available.
-
-        public ThingFilter masterFuelSettings = new ThingFilter();
-        public ThingDef standardFuel; //used for the potential fuel calculation in abstract terms.
+         //used for the potential fuel calculation in abstract terms.
+        public Dictionary<ThingDef, List<ThingDef>> UserCustomFuels = new Dictionary<ThingDef, List<ThingDef>>();
         private List<string> ExposedList = new List<string>();
+
+        public byte FuelPotentialValuesState => BoolArrayToByte(new bool[] { useMass, useFlamm });
 
         public ThingFilter PossibleFuels
         {
@@ -35,9 +44,6 @@ namespace BurnItForFuel
                 return filter;
             }
         }
-
-        public byte FuelPotentialValuesState => BoolArrayToByte(new bool[] { useMass, useFlamm });
-
         public byte BoolArrayToByte(bool[] boolArray) //nifty little thing!
         {
             byte result = 0;
@@ -51,20 +57,28 @@ namespace BurnItForFuel
             return result;
         }
 
-        public override void ExposeData()
+        public void CustomFuelsOnDemand(bool saving)
         {
-            if (Scribe.mode == LoadSaveMode.Saving && masterFuelSettings != null)
+            string label = "UserCustomFuels";
+            string filename = LoadedModManager.GetSettingsFilename(Mod.Content.FolderName, $"{Mod.GetType().Name}_{label}");
+            if (saving)
             {
-                ExposedList = masterFuelSettings.AllowedThingDefs.Select(x => x.defName).ToList();
-                if (Current.ProgramState == ProgramState.Playing) RedistributeFuelSettings();
+                Scribe.saver.InitSaving(filename, label);
             }
-            Scribe_Collections.Look(ref ExposedList, "masterFuelSettings", LookMode.Value);
-            Scribe_Values.Look(ref useMass, "useMass", true);
-            Scribe_Values.Look(ref useFlamm, "useFlamm", true);
-            Scribe_Values.Look(ref enableTargetFuelLevel, "enableTargetFuelLevel", true);
-            Scribe_Values.Look(ref enableWithNonFuel, "enableWithNonFuel", false);
-            Scribe_Values.Look(ref showFuelPotential, "showFuelPotential", false);
-            base.ExposeData();
+            else
+            {
+                if (!File.Exists(filename)) return;
+                Scribe.loader.InitLoading(filename);
+            }
+            try
+            {
+                Scribe_Collections.Look(ref UserCustomFuels, label, LookMode.Def, LookMode.Def);
+            }
+            finally
+            {
+                if (saving) Scribe.saver.FinalizeSaving();
+                else Scribe.loader.FinalizeLoading();
+            }
         }
 
         public bool DelayedLoading() //Apparently the DefDatabase wasn't ready before and we couldn't load ThingDefs.
@@ -83,18 +97,6 @@ namespace BurnItForFuel
             return true;
         }
 
-        public void RedistributeFuelSettings()
-        {
-            foreach (Map map in Find.Maps)
-            {
-                List<Thing> affected = map.listerThings.ThingsMatching(ThingRequest.ForGroup(ThingRequestGroup.Refuelable));
-                foreach (Thing t in affected)
-                {
-                    if (t is Building b) b.GetComp<CompSelectFuel>()?.ValidateFuelSettings();
-                }
-            }
-        }
-
         public void Draw(Rect rect)
         {
             //text
@@ -105,7 +107,7 @@ namespace BurnItForFuel
             string useMass_tt = "UseMassToolTip".Translate();
             string useFlamm_label = "UseFlammLabel".Translate();
             string useFlammToolTip = "UseFlammToolTip".Translate();
-            string zeroPotentialNotice = "* "+"ZeroPotentialNotice".Translate();
+            string zeroPotentialNotice = "* " + "ZeroPotentialNotice".Translate();
             string enableTargetFuelLevel_label = "EnableTargetFuelLevelLabel".Translate();
             string enableTargetFuelLevel_tt = "EnableTargetFuelLevelToolTip".Translate();
             string enableWithNonFuel_label = "EnableWithNonFuelLabel".Translate();
@@ -158,6 +160,39 @@ namespace BurnItForFuel
             listing.End();
         }
 
+        public override void ExposeData()
+        {
+            if (Scribe.mode == LoadSaveMode.Saving && masterFuelSettings != null)
+            {
+                ExposedList = masterFuelSettings.AllowedThingDefs.Select(x => x.defName).ToList();
+                if (Current.ProgramState == ProgramState.Playing) RedistributeFuelSettings();
+            }
+            Scribe_Collections.Look(ref ExposedList, "masterFuelSettings", LookMode.Value);
+            Scribe_Values.Look(ref useMass, "useMass", true);
+            Scribe_Values.Look(ref useFlamm, "useFlamm", true);
+            Scribe_Values.Look(ref enableTargetFuelLevel, "enableTargetFuelLevel", true);
+            Scribe_Values.Look(ref enableWithNonFuel, "enableWithNonFuel", false);
+            Scribe_Values.Look(ref showFuelPotential, "showFuelPotential", false);
+            base.ExposeData();
+        }
+
+        public void RedistributeFuelSettings()
+        {
+            foreach (Map map in Find.Maps)
+            {
+                List<Thing> affected = map.listerThings.ThingsMatching(ThingRequest.ForGroup(ThingRequestGroup.Refuelable));
+                foreach (Thing t in affected)
+                {
+                    if (t is Building b) b.GetComp<CompSelectFuel>()?.ValidateFuelSettings();
+                }
+            }
+        }
+
+        public void ResetFuelSettings()
+        {
+            masterFuelSettings.CopyAllowancesFrom(defaultFuelSettings);
+        }
+
         public void TTFilterCheckbox(Rect rect, float size)
         {
             //text
@@ -195,7 +230,6 @@ namespace BurnItForFuel
                 Widgets.CheckboxDraw(rect3.x + rect3.width - size, rect.y + (rect.height - size) / 2f, showInvalids, false, size, null, null);
                 if (Mouse.IsOver(rect3)) Widgets.DrawHighlight(rect3);
             }
-
             Text.Anchor = anchor;
         }
     }

@@ -2,6 +2,7 @@
 using RimWorld;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
@@ -230,12 +231,12 @@ namespace BurnItForFuel
             else if (TTFilterOnTab && !FuelTab.IsVisible && !TTFilterWindowFlag) FuelTab = null;
         }
 
-        public static void DoThingFilterConfigWindow_Postfix(Rect rect, byte __state)
+        public static void DoThingFilterConfigWindow_Postfix(Rect rect, ref ThingFilter filter, byte __state)
         {
             if (!TTFilterExtrasAllowed) return; //Acts only if called for.
             float padding = TTFilterWindowBorder.value / 2;
             Rect footbar = new Rect(rect.x + padding, rect.yMax + padding, rect.width - TTFilterWindowBorder.value, ThingFilterExtras.buttonHeight);
-            ThingFilterExtras.TTFilterExtraButtons(footbar, TTFilterOnTab);
+            ThingFilterExtras.TTFilterExtraButtons(footbar, FuelTab?.SelFuelComp);
             if (TTFilterOnSettings && Settings.FuelPotentialValuesState != __state) SelectFuelHelper.ResetFuelValueCache(); //Calls for the fuel values updating if needed & we're on the main settings window.
         }
 

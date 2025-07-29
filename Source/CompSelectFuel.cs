@@ -15,6 +15,20 @@ namespace BurnItForFuel
         private bool? fuelSettingsIncludeBaseFuel;
         private CompRefuelable siblingComp;
 
+        public ThingFilter BaseFuelSettings
+        {
+            get
+            {
+                if (!CachedOrReadCustomFuels()) return SiblingComp.Props.fuelFilter;
+                var customFilter = new ThingFilter();
+                foreach (var fuel in CachedCustomFuels)
+                {
+                    customFilter.SetAllow(fuel, true);
+                }
+                return customFilter;
+            }
+        }
+
         public float BaseFuelValue
         {
             get
@@ -29,6 +43,34 @@ namespace BurnItForFuel
                 return baseFuelValue;
             }
         }
+
+        public List<ThingDef> CachedCustomFuels
+        {
+            get
+            {
+                if (!settings.UserCustomFuels.NullOrEmpty() && settings.UserCustomFuels.ContainsKey(parent.def))
+                {
+                    return settings.UserCustomFuels[parent.def];
+                }
+                return null;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    if (settings.UserCustomFuels == null) settings.UserCustomFuels = new Dictionary<ThingDef, List<ThingDef>>();
+                    if (!settings.UserCustomFuels.ContainsKey(parent.def))
+                    {
+                        settings.UserCustomFuels.Add(parent.def, value);
+                    }
+                    else
+                    {
+                        settings.UserCustomFuels[parent.def] = value;
+                    }
+                }
+            }
+        }
+
         public bool FuelSettingsIncludeBaseFuel //e.g: Dubs Hygiene Burning Pit doesn't. 
         {
             get
@@ -69,12 +111,13 @@ namespace BurnItForFuel
             }
         }
         public bool StorageTabVisible { get; set; }
-
-        private ThingFilter BaseFuelSettings => SiblingComp.Props.fuelFilter;
-        private bool ClearedForFuelSelection => settings.enableWithNonFuel || FuelSettingsIncludeBaseFuel;
-        private ThingFilter UserFuelSettings => BurnItForFuelMod.settings.masterFuelSettings;
-        private bool SafeToMixFuels => parent.def.passability != Traversability.Impassable && !parent.def.building.canPlaceOverWall;
         private static BurnItForFuelSettings settings => BurnItForFuelMod.settings;
+
+        private bool ClearedForFuelSelection => settings.enableWithNonFuel || FuelSettingsIncludeBaseFuel;
+
+        private bool SafeToMixFuels => parent.def.passability != Traversability.Impassable && !parent.def.building.canPlaceOverWall;
+
+        private ThingFilter UserFuelSettings => BurnItForFuelMod.settings.masterFuelSettings;
 
         public override IEnumerable<Gizmo> CompGetGizmosExtra()
         {
@@ -129,6 +172,17 @@ namespace BurnItForFuel
             SetUpFuelFeatures();
         }
 
+        public void LoadCustomFuels()
+        {
+            if (!CachedOrReadCustomFuels()) return;
+            var customFilter = new ThingFilter();
+            foreach (var fuel in CachedCustomFuels)
+            {
+                customFilter.SetAllow(fuel, true);
+            }
+            SetFuelSettings(customFilter);
+        }
+
         public void Notify_SettingsChanged()
         {
         }
@@ -181,6 +235,27 @@ namespace BurnItForFuel
             }
         }
 
+        public void ResetFuelSettings()
+        {
+            if (SiblingComp?.Props?.fuelFilter == null)
+            {
+                Log.Error($"[BurnItForFuel] Can't retrieve base fuel settings for {parent.def.defName}: null fuelFilter");
+            }
+            SetFuelSettings(SiblingComp.Props.fuelFilter);
+        }
+
+        public void SaveCustomFuels()
+        {
+            CachedCustomFuels = FuelSettings.filter.allowedDefs.ToList();
+            settings.CustomFuelsOnDemand(true);
+        }
+
+        public void SetFuelSettings(ThingFilter filter)
+        {
+            FuelSettings.filter.SetDisallowAll(UserFuelSettings.AllowedThingDefs);
+            FuelSettings.filter.SetAllowAll(filter);
+        }
+
         public void SetUpFuelFeatures()
         {
             if (SiblingComp == null) return;
@@ -218,27 +293,34 @@ namespace BurnItForFuel
         public void SetupFuelSettings()
         {
             FuelSettings = new StorageSettings(this);
-            FuelSettings.filter.SetDisallowAll(UserFuelSettings.AllowedThingDefs);
-            if (BaseFuelSettings != null) FuelSettings.filter.SetAllowAll(BaseFuelSettings);
+            if (BaseFuelSettings != null) SetFuelSettings(BaseFuelSettings);
         }
-
         public void ValidateFuelSettings()
         {
             fuelSettingsIncludeBaseFuel = null; //reset the cached value, so it can be recalculated
-            if (Scribe.mode != LoadSaveMode.PostLoadInit) 
+            if (Scribe.mode != LoadSaveMode.PostLoadInit)
             {
                 SetUpFuelFeatures();
             }
             //if (SafeToMixFuels)
             //{
-                foreach (ThingDef def in FuelSettings.filter.AllowedThingDefs.Where(d => !GetParentStoreSettings().filter.Allows(d)))
-                {
-                    FuelSettings.filter.SetAllow(def, false);
-                    Log.Warning($"[BurnItForFuel] {def.defName} is no longer fuel, so it was removed from the {parent} fuel settings.");
-                }
+            foreach (ThingDef def in FuelSettings.filter.AllowedThingDefs.Where(d => !GetParentStoreSettings().filter.Allows(d)))
+            {
+                FuelSettings.filter.SetAllow(def, false);
+                Log.Warning($"[BurnItForFuel] {def.defName} is no longer fuel, so it was removed from the {parent} fuel settings.");
+            }
             //}
         }
 
+        private bool CachedOrReadCustomFuels()
+        {
+            if (CachedCustomFuels.NullOrEmpty())
+            {
+                settings.CustomFuelsOnDemand(false);
+                return !CachedCustomFuels.NullOrEmpty();
+            }
+            return true;
+        }
         //private bool IsVehicle()
         //{
         //    return nativeTargetFuelLevel.Contains(parent.def) && SiblingComp.Props.consumeFuelOnlyWhenUsed;

@@ -54,20 +54,15 @@ namespace BurnItForFuel
             return false;
         }
 
-        public static bool ValidateAsFuel(this ThingDef def)
+        public static bool ValidateAsFuel(this ThingDef def, bool showError = false)
         {
             float flamm, mass;
-            return ValidateAsFuel(def, out flamm, out mass);
+            return ValidateAsFuel(def, out flamm, out mass, showError);
         }
 
         public static float AbsoluteFuelRatio(this ThingDef def)
         {
             var ratio = def.UnitFuelValue() / Settings.standardFuel.UnitFuelValue();
-            //if (ratio <= 0f)
-            //{
-            //    Log.Error($"[BurnItForFuel] Invalid value: {def.defName} has a fuel equivalence ratio of 0 or less when compared to {Settings.standardFuel.label}.");
-            //    return 0f;
-            //}
             return ratio;
         }
     }
