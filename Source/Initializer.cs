@@ -15,6 +15,7 @@ namespace BurnItForFuel
         static Initializer()
         {
             bool savedSettings = settings.DelayedLoading();
+            settings.standardFuel = ThingDefOf.WoodLog;
             CompInjection();
             SetDefaultFuels();
             if (!savedSettings)

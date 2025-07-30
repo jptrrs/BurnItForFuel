@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using RimWorld;
+using UnityEngine;
 using Verse;
 
 namespace BurnItForFuel
@@ -28,6 +29,7 @@ namespace BurnItForFuel
         {
             return "Burn It For Fuel";
         }
+
         public override void WriteSettings()
         {
             base.WriteSettings();

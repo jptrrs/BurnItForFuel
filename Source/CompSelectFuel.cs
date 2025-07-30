@@ -304,7 +304,8 @@ namespace BurnItForFuel
             }
             //if (SafeToMixFuels)
             //{
-            foreach (ThingDef def in FuelSettings.filter.AllowedThingDefs.Where(d => !GetParentStoreSettings().filter.Allows(d)))
+            var disallowed = FuelSettings.filter.AllowedThingDefs.Where(d => !GetParentStoreSettings().filter.Allows(d)).ToList();
+            foreach (ThingDef def in disallowed)
             {
                 FuelSettings.filter.SetAllow(def, false);
                 Log.Warning($"[BurnItForFuel] {def.defName} is no longer fuel, so it was removed from the {parent} fuel settings.");

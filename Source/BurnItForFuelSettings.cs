@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Xml.Serialization;
 using UnityEngine;
 using Verse;
 
@@ -14,16 +13,16 @@ namespace BurnItForFuel
             masterFuelSettings = new ThingFilter(),
             defaultFuelSettings = new ThingFilter();
 
-        public ThingDef standardFuel;
+        public ThingDef standardFuel; //used for the potential fuel calculation in abstract terms, defined on the Initializer class.
 
         public bool
-                            useMass = true,
+            useMass = true,
             useFlamm = true,
             enableTargetFuelLevel = true,
             enableWithNonFuel = false,
             showFuelPotential = false,
             showInvalids = false; //for dev mode, to see what fuels are available.
-         //used for the potential fuel calculation in abstract terms.
+        
         public Dictionary<ThingDef, List<ThingDef>> UserCustomFuels = new Dictionary<ThingDef, List<ThingDef>>();
         private List<string> ExposedList = new List<string>();
 
@@ -44,6 +43,7 @@ namespace BurnItForFuel
                 return filter;
             }
         }
+
         public byte BoolArrayToByte(bool[] boolArray) //nifty little thing!
         {
             byte result = 0;
@@ -93,7 +93,6 @@ namespace BurnItForFuel
                 }
             }
             ExposedList.Clear();
-            standardFuel = ThingDefOf.WoodLog;
             return true;
         }
 
@@ -197,7 +196,7 @@ namespace BurnItForFuel
         {
             //text
             string label = "ShowFuelPotential".Translate();
-            string tooltip = "ShowFuelPotentialToolTip".Translate(standardFuel.label);
+            string tooltip = "ShowFuelPotentialToolTip".Translate(standardFuel.LabelCap);
 
             //layout
             TextAnchor anchor = Text.Anchor;
