@@ -116,7 +116,6 @@ namespace BurnItForFuel
         private static BurnItForFuelSettings settings => BurnItForFuelMod.settings;
 
         //private bool ClearedForFuelSelection => settings.enableWithNonFuel || FuelSettingsIncludeBaseFuel;
-        //private bool SafeToMixFuels => parent.def.passability != Traversability.Impassable && !parent.def.building.canPlaceOverWall;
 
         private ThingFilter UserFuelSettings => BurnItForFuelMod.settings.masterFuelSettings;
 
@@ -276,14 +275,14 @@ namespace BurnItForFuel
             }
 
             //Fuel Mixing
-            if (!FuelSettingsIncludeBaseFuel)
+            if (!ClearedForFuelSelection)
             {
                 props.atomicFueling = defaults.atomicFueling;
                 StorageTabVisible = false;
                 props.canEjectFuel = defaults.canEjectFuel;
                 Log.Message($"[BurnItForFuel] {BaseFuelSettings.ToString()} is used by the {parent.Label}, but it isn't marked as fuel. Fuel tab disabled. Change the settings to prevent this.");
             }
-            else /*if (SafeToMixFuels)*/
+            else if (SafeToMixFuels)
             {
                 props.atomicFueling = true;
                 StorageTabVisible = true;
