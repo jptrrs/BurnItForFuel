@@ -21,8 +21,8 @@
   <ZeroPotentialNotice>Resources with zero fuel potential are not listed.</ZeroPotentialNotice>
   <EnableTargetFuelLevelLabel>Enable configurable target fuel level for all objects using fuel selection</EnableTargetFuelLevelLabel>
   <EnableTargetFuelLevelToolTip>With a configurable target fuel level, you can select how much fuel should be maintained in that building.</EnableTargetFuelLevelToolTip>
-  <EnableWithNonFuelLabel>Enable fuel selection even for fueled objects which rely on non-fuel resources</EnableWithNonFuelLabel>
-  <EnableWithNonFuelToolTip>This affects anything that is normally fueled by something NOT selected here.</EnableWithNonFuelToolTip>
+  <!--<EnableWithNonFuelLabel>Enable fuel selection even for fueled objects which rely on non-fuel resources</EnableWithNonFuelLabel>
+  <EnableWithNonFuelToolTip>This affects anything that is normally fueled by something NOT selected here.</EnableWithNonFuelToolTip>-->
   <ShowFuelPotential>Show fuel potential</ShowFuelPotential>
   <ShowFuelPotentialToolTip>Fuel value per unit when compared to {0}</ShowFuelPotentialToolTip>
     
