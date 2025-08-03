@@ -15,19 +15,21 @@ namespace BurnItForFuel
         private bool? fuelSettingsIncludeBaseFuel;
         private CompRefuelable siblingComp;
 
-        public ThingFilter BaseFuelSettings
-        {
-            get
-            {
-                if (!CachedOrReadCustomFuels()) return SiblingComp.Props.fuelFilter;
-                var customFilter = new ThingFilter();
-                foreach (var fuel in CachedCustomFuels)
-                {
-                    customFilter.SetAllow(fuel, true);
-                }
-                return customFilter;
-            }
-        }
+        public ThingFilter BaseFuelSettings => SiblingComp.Props.fuelFilter;
+
+        //private ThingFilter InitialFuelSettings
+        //{
+        //    get
+        //    {
+        //        if (CachedCustomFuels.NullOrEmpty()) return SiblingComp.Props.fuelFilter;
+        //        var customFilter = new ThingFilter();
+        //        foreach (var fuel in CachedCustomFuels)
+        //        {
+        //            customFilter.SetAllow(fuel, true);
+        //        }
+        //        return customFilter;
+        //    }
+        //}
 
         public float BaseFuelValue
         {
@@ -114,8 +116,7 @@ namespace BurnItForFuel
         private static BurnItForFuelSettings settings => BurnItForFuelMod.settings;
 
         //private bool ClearedForFuelSelection => settings.enableWithNonFuel || FuelSettingsIncludeBaseFuel;
-
-        private bool SafeToMixFuels => parent.def.passability != Traversability.Impassable && !parent.def.building.canPlaceOverWall;
+        //private bool SafeToMixFuels => parent.def.passability != Traversability.Impassable && !parent.def.building.canPlaceOverWall;
 
         private ThingFilter UserFuelSettings => BurnItForFuelMod.settings.masterFuelSettings;
 
@@ -168,13 +169,13 @@ namespace BurnItForFuel
         public override void Initialize(CompProperties props)
         {
             base.Initialize(props);
-            if (Scribe.mode != LoadSaveMode.PostLoadInit) SetupFuelSettings();
+            if (Scribe.mode != LoadSaveMode.PostLoadInit) SetUpFuelSettings();
             SetUpFuelFeatures();
         }
 
         public void LoadCustomFuels()
         {
-            if (!CachedOrReadCustomFuels()) return;
+            if (CachedCustomFuels.NullOrEmpty()) return;
             var customFilter = new ThingFilter();
             foreach (var fuel in CachedCustomFuels)
             {
@@ -193,7 +194,7 @@ namespace BurnItForFuel
             Scribe_Deep.Look<StorageSettings>(ref FuelSettings, "fuelSettings");
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
-                if (FuelSettings == null) SetupFuelSettings();
+                if (FuelSettings == null) SetUpFuelSettings();
                 ValidateFuelSettings();
             }
         }
@@ -252,7 +253,7 @@ namespace BurnItForFuel
 
         public void SetFuelSettings(ThingFilter filter)
         {
-            FuelSettings.filter.SetDisallowAll(UserFuelSettings.AllowedThingDefs);
+            FuelSettings = new StorageSettings(this);
             FuelSettings.filter.SetAllowAll(filter);
         }
 
@@ -290,11 +291,23 @@ namespace BurnItForFuel
             }
         }
 
-        public void SetupFuelSettings()
+        public void SetUpFuelSettings()
         {
-            FuelSettings = new StorageSettings(this);
-            if (BaseFuelSettings != null) SetFuelSettings(BaseFuelSettings);
+            var filter = new ThingFilter();
+            if (CachedCustomFuels.NullOrEmpty())
+            {
+                filter = BaseFuelSettings;
+            }
+            else
+            {
+                foreach (var fuel in CachedCustomFuels)
+                {
+                    filter.SetAllow(fuel, true);
+                }
+            }
+            SetFuelSettings(filter);
         }
+
         public void ValidateFuelSettings()
         {
             fuelSettingsIncludeBaseFuel = null; //reset the cached value, so it can be recalculated
@@ -313,15 +326,15 @@ namespace BurnItForFuel
             //}
         }
 
-        private bool CachedOrReadCustomFuels()
-        {
-            if (CachedCustomFuels.NullOrEmpty())
-            {
-                settings.CustomFuelsOnDemand(false);
-                return !CachedCustomFuels.NullOrEmpty();
-            }
-            return true;
-        }
+        //private bool CachedOrReadCustomFuels()
+        //{
+        //    if (CachedCustomFuels.NullOrEmpty())
+        //    {
+        //        settings.CustomFuelsOnDemand(false);
+        //        return !CachedCustomFuels.NullOrEmpty();
+        //    }
+        //    return true;
+        //}
         //private bool IsVehicle()
         //{
         //    return nativeTargetFuelLevel.Contains(parent.def) && SiblingComp.Props.consumeFuelOnlyWhenUsed;

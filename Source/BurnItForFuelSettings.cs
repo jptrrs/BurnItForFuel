@@ -58,6 +58,8 @@ namespace BurnItForFuel
 
         public void CustomFuelsOnDemand(bool saving)
         {
+            var previous = Scribe.mode;
+            Scribe.mode = LoadSaveMode.Inactive;
             string label = "UserCustomFuels";
             string filename = LoadedModManager.GetSettingsFilename(Mod.Content.FolderName, $"{Mod.GetType().Name}_{label}");
             if (saving)
@@ -77,11 +79,13 @@ namespace BurnItForFuel
             {
                 if (saving) Scribe.saver.FinalizeSaving();
                 else Scribe.loader.FinalizeLoading();
+                Scribe.mode = previous;
             }
         }
 
         public bool DelayedLoading() //Apparently the DefDatabase wasn't ready before and we couldn't load ThingDefs.
         {
+            CustomFuelsOnDemand(false);
             if (ExposedList.Empty()) return false;
             foreach (var e in ExposedList)
             {
