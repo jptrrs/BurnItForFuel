@@ -8,6 +8,7 @@ using System.Reflection.Emit;
 using UnityEngine;
 using Verse;
 using Verse.AI;
+using static System.Xml.Schema.FacetsChecker.FacetsCompiler;
 
 namespace BurnItForFuel
 {
@@ -29,14 +30,14 @@ namespace BurnItForFuel
             var harmonyInstance = new Harmony("JPT_BurnItForFuel");
 
             //only for DEBUG purposes:
-            harmonyInstance.Patch(original: AccessTools.Method(type: typeof(RefuelWorkGiverUtility), name: "CanRefuel"),
-                prefix: null, postfix: new HarmonyMethod(patchType, nameof(CanRefuel_Postfix)), transpiler: null);
+            //harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "CanRefuel"),
+            //    new HarmonyMethod(patchType, nameof(CanRefuel_Prefix)), new HarmonyMethod(patchType, nameof(CanRefuel_Postfix)), transpiler: null);
 
             //Our own way of looking for fuels and refueling.
             harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "FindAllFuel"),
-                new HarmonyMethod(patchType, nameof(FindAllFuel_Prefix)));
-            harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "FindBestFuel"),
-                null, null, new HarmonyMethod(patchType, nameof(FuelFilter_Transpiler)));
+                new HarmonyMethod(patchType, nameof(FindAllFuel_Prefix))); //FindAllFuel is used for atomicFueling
+            harmonyInstance.Patch(AccessTools.Method(typeof(RefuelWorkGiverUtility), "FindBestFuel"), 
+                null, /*new HarmonyMethod(patchType, nameof(FindBestFuel_Postfix))*/null, new HarmonyMethod(patchType, nameof(FuelFilter_Transpiler))); //FindBestFuel is used for non-atomic fuelling.
             harmonyInstance.Patch(AccessTools.Method(typeof(CompRefuelable), nameof(CompRefuelable.Refuel), new Type[] { typeof(List<Thing>) }),
                 new HarmonyMethod(patchType, nameof(Refuel_Prefix)));
             harmonyInstance.Patch(AccessTools.Method(typeof(CompRefuelable), nameof(CompRefuelable.GetFuelCountToFullyRefuel)),
@@ -240,11 +241,19 @@ namespace BurnItForFuel
             if (TTFilterOnSettings && Settings.FuelPotentialValuesState != __state) SelectFuelHelper.ResetFuelValueCache(); //Calls for the fuel values updating if needed & we're on the main settings window.
         }
 
+        //Debug only.
+        public static void CanRefuel_Prefix(object __instance, Pawn pawn, Thing t, bool forced, ref bool __result)
+        {
+            Log.Message($"[BurnItForFuel] CanRefuel starting for? {__instance}.");
+        }
+
+        //Debug only.
         public static void CanRefuel_Postfix(object __instance, Pawn pawn, Thing t, bool forced, ref bool __result)
         {
             Log.Message($"[BurnItForFuel] CanRefuel? {__result.ToStringYesNo()}.");
         }
 
+        //Debug only.
         public static void FindBestFuel_Postfix(Pawn pawn, Thing refuelable, ref Thing __result)
         {
             Log.Message($"[BurnItForFuel] FindBestFuel returns {__result.Label}. Atomic? {refuelable.TryGetComp<CompRefuelable>().Props.atomicFueling}");
@@ -263,18 +272,20 @@ namespace BurnItForFuel
 
         private static List<Thing> FindAllFuel(Pawn pawn, Thing refuelable) //returning null when basefuel not selected
         {
-            //int fuelCountToFullyRefuel = refuelable.TryGetComp<CompRefuelable>().GetFuelCountToFullyRefuel();
             var compSelectFuel = refuelable.TryGetComp<CompSelectFuel>();
             int fuelCountToFullyRefuel = compSelectFuel.GetFuelCountToFullyRefuel();
             List<Thing> result = FindEnoughReservableThings(pawn, refuelable.Position, new IntRange(fuelCountToFullyRefuel, fuelCountToFullyRefuel), compSelectFuel);
-            Log.Message($"[BurnItForFuel] diverted FindAllFuel returns {result.ToStringSafeEnumerable()}.");
             return result;
         }
 
         //Ideia: Já que GetFuelCountToFullyRefuel retorna a quantidade de combustivel padrão, podemos fazer a equivalência com outros combustíveis no momento em que a busca é feita, quando o item potencial é averiguado. Aparentemente, essa é a função de FindEnoughReservableThings. ThingListProcessor (nested) acumula o stackcount de cada item e compara com a desiredQuantity, que por sua vez se refere ao combustível padrão.
         public static List<Thing> FindEnoughReservableThings(Pawn pawn, IntVec3 rootCell, IntRange desiredQuantity, CompSelectFuel compSelectFuel)
         {
-            Region localRegion = rootCell.GetRegion(pawn.Map);
+            Region localRegion = rootCell.GetRegion(pawn.Map) ?? compSelectFuel.parent.InteractionCell.GetRegion(pawn.Map);
+            if (localRegion == null)
+            {
+                Log.Error($"[BurnItForFuel] Null region when looking for reservable things while refuelling {compSelectFuel.parent.def}.");
+            }
             TraverseParms traverseParams = TraverseParms.For(pawn);
             List<Thing> chosenThings = new List<Thing>();
             int accumulatedQuantity = 0;
@@ -284,13 +295,13 @@ namespace BurnItForFuel
             {
                 RegionTraverser.BreadthFirstTraverse(localRegion, EntryCondition, RegionProcessor, 99999);
             }
-
             if (accumulatedQuantity >= desiredQuantity.min)
             {
                 return chosenThings;
             }
             Log.Message($"Didn't find enough. accumulatedQuantity={accumulatedQuantity}, desiredQuantity{desiredQuantity.min}");
             return null;
+
             bool EntryCondition(Region from, Region r)
             {
                 return r.Allows(traverseParams, isDestination: false);
@@ -333,12 +344,10 @@ namespace BurnItForFuel
                     return false;
                 }
                 Log.Message($"[BurnItForFuel] Validator for {compSelectFuel.parent.Label} allows {compSelectFuel.FuelSettings.filter.allowedDefs.ToStringSafeEnumerable()}.");
-
                 if (!compSelectFuel.FuelSettings.filter.Allows(x))
                 {
                     return false;
                 }
-
                 return true;
             }
         }

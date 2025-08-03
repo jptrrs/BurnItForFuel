@@ -19,6 +19,7 @@ namespace BurnItForFuel
             useMass = true,
             useFlamm = true,
             enableTargetFuelLevel = true,
+            enableWithNonFuel = false,
             showFuelPotential = false,
             showInvalids = false; //for dev mode, to see what fuels are available.
         
@@ -158,6 +159,7 @@ namespace BurnItForFuel
             Text.Anchor = TextAnchor.UpperLeft;
             listing.Gap();
             listing.CheckboxLabeled(enableTargetFuelLevel_label, ref enableTargetFuelLevel, enableTargetFuelLevel_tt);
+            listing.CheckboxLabeled(enableWithNonFuel_label, ref enableWithNonFuel, enableWithNonFuel_tt);
             listing.End();
         }
 
@@ -172,6 +174,7 @@ namespace BurnItForFuel
             Scribe_Values.Look(ref useMass, "useMass", true);
             Scribe_Values.Look(ref useFlamm, "useFlamm", true);
             Scribe_Values.Look(ref enableTargetFuelLevel, "enableTargetFuelLevel", true);
+            Scribe_Values.Look(ref enableWithNonFuel, "enableWithNonFuel", false);
             Scribe_Values.Look(ref showFuelPotential, "showFuelPotential", false);
             base.ExposeData();
         }
