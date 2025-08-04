@@ -25,5 +25,7 @@
   <EnableWithNonFuelToolTip>This affects anything that is normally fueled by something NOT selected here.</EnableWithNonFuelToolTip>
   <ShowFuelPotential>Show fuel potential</ShowFuelPotential>
   <ShowFuelPotentialToolTip>Fuel value per unit when compared to {0}</ShowFuelPotentialToolTip>
+  <MessageFuelSettingsSaved>Current fuel choices for {0} saved as a preset.</MessageFuelSettingsSaved>
+  <MessageFuelSettingsLoaded>Preset fuel choices applied to {0}.</MessageFuelSettingsLoaded>
     
 </LanguageData>

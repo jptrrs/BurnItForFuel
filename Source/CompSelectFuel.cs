@@ -16,7 +16,7 @@ namespace BurnItForFuel
         private CompRefuelable siblingComp;
         private ThingFilter combinedFuelFilter;
 
-        public ThingFilter BaseFuelSettings => SiblingComp.Props.fuelFilter;
+        public ThingFilter  BaseFuelSettings => SiblingComp.Props.fuelFilter;
 
         public float BaseFuelValue
         {
@@ -77,6 +77,7 @@ namespace BurnItForFuel
                 return false;
             }
         }
+
         public CompProperties_SelectFuel Props
         {
             get
@@ -84,6 +85,7 @@ namespace BurnItForFuel
                 return (CompProperties_SelectFuel)props;
             }
         }
+
         public CompRefuelable SiblingComp
         {
             get
@@ -99,11 +101,12 @@ namespace BurnItForFuel
                 return siblingComp;
             }
         }
+
         public bool StorageTabVisible { get; set; }
+
         private static BurnItForFuelSettings settings => BurnItForFuelMod.settings;
 
         private bool ClearedForFuelSelection => settings.enableWithNonFuel || FuelSettingsIncludeBaseFuel;
-        private bool MakeFuelExemption => settings.enableWithNonFuel && !FuelSettingsIncludeBaseFuel;
 
         private ThingFilter UserFuelSettings
         {
@@ -178,7 +181,7 @@ namespace BurnItForFuel
         {
             base.Initialize(props);
             if (Scribe.mode != LoadSaveMode.PostLoadInit) SetUpFuelSettings();
-            SetUpFuelFeatures();
+            SetUpFuelConfiguration();
         }
 
         public void LoadCustomFuels()
@@ -190,6 +193,7 @@ namespace BurnItForFuel
                 customFilter.SetAllow(fuel, true);
             }
             SetFuelSettings(customFilter);
+            Messages.Message("MessageFuelSettingsLoaded".Translate(parent.def.LabelCap), MessageTypeDefOf.SilentInput, false);
         }
 
         public void Notify_SettingsChanged()
@@ -221,14 +225,14 @@ namespace BurnItForFuel
 
         public void Refuel(List<Thing> fuelThings)
         {
-            if (SiblingComp.Props.atomicFueling)
-            {
-                if (fuelThings.Sum((Thing t) => Mathf.FloorToInt(t.stackCount * EquivalentFuelRatio(t.def))) < GetFuelCountToFullyRefuel())
-                {
-                    Log.ErrorOnce("Error refueling; not enough fuel available for proper atomic refuel", 19586442);
-                    return;
-                }
-            }
+            //if (SiblingComp.Props.atomicFueling)
+            //{
+            //    if (fuelThings.Sum((Thing t) => Mathf.FloorToInt(t.stackCount * EquivalentFuelRatio(t.def))) < GetFuelCountToFullyRefuel())
+            //    {
+            //        Log.ErrorOnce("Error refueling; not enough fuel available for proper atomic refuel", 19586442);
+            //        return;
+            //    }
+            //}
             int fuelCount = GetFuelCountToFullyRefuel();
             while (fuelCount > 0 && fuelThings.Count > 0)
             {
@@ -240,7 +244,7 @@ namespace BurnItForFuel
                 SiblingComp.Refuel(satisfiedCount); //refuels the corresponding amount
                 thing.SplitOff(usedAmount).Destroy(DestroyMode.Vanish); //consumes the actual fuel used
                 fuelCount -= satisfiedCount; //deducts the appropiate amount from the needed count. 
-                Log.Message($"Refuel used {usedAmount} of {thing.def.defName} to generate {satisfiedCount} fuel units.");
+                //Log.Message($"Refuel used {usedAmount} of {thing.def.defName} to generate {satisfiedCount} fuel units.");
             }
         }
 
@@ -257,15 +261,18 @@ namespace BurnItForFuel
         {
             CachedCustomFuels = FuelSettings.filter.allowedDefs.ToList();
             settings.CustomFuelsOnDemand(true);
+            Messages.Message("MessageFuelSettingsSaved".Translate(parent.def.LabelCap), MessageTypeDefOf.SilentInput, false);
         }
 
         public void SetFuelSettings(ThingFilter filter)
         {
             FuelSettings = new StorageSettings(this);
             FuelSettings.filter.SetAllowAll(filter);
+            FuelSettings.filter.allowedHitPointsConfigurable = FuelSettings.filter.AllowedThingDefs.Any(x => x.useHitPoints);
+            FuelSettings.filter.allowedQualitiesConfigurable = FuelSettings.filter.AllowedThingDefs.Any(x => x.HasComp<CompQuality>());
         }
 
-        public void SetUpFuelFeatures()
+        public void SetUpFuelConfiguration()
         {
             if (SiblingComp == null) return;
             var props = SiblingComp.Props;
@@ -295,6 +302,7 @@ namespace BurnItForFuel
                 props.atomicFueling = defaults.atomicFueling;
                 StorageTabVisible = false;
                 props.canEjectFuel = defaults.canEjectFuel;
+                ResetFuelSettings();
                 Log.Message($"[BurnItForFuel] {BaseFuelSettings.ToString()} is used by the {parent.Label}, but it isn't marked as fuel. Fuel tab disabled. Change the settings to prevent this.");
             }
         }
@@ -316,13 +324,13 @@ namespace BurnItForFuel
             SetFuelSettings(filter);
         }
 
-        public void ValidateFuelSettings()
+        public void ValidateFuelSettings(bool resetSetup = false)
         {
-            fuelSettingsIncludeBaseFuel = null; //reset the cached value, so it can be recalculated
+            fuelSettingsIncludeBaseFuel = null;
             combinedFuelFilter = null;
-            if (Scribe.mode != LoadSaveMode.PostLoadInit)
+            if (resetSetup)
             {
-                SetUpFuelFeatures();
+                SetUpFuelConfiguration();
             }
             var disallowed = FuelSettings.filter.AllowedThingDefs.Where(d => !GetParentStoreSettings().filter.Allows(d)).ToList();
             foreach (ThingDef def in disallowed)

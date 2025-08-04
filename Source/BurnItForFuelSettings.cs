@@ -186,7 +186,7 @@ namespace BurnItForFuel
                 List<Thing> affected = map.listerThings.ThingsMatching(ThingRequest.ForGroup(ThingRequestGroup.Refuelable));
                 foreach (Thing t in affected)
                 {
-                    if (t is Building b) b.GetComp<CompSelectFuel>()?.ValidateFuelSettings();
+                    if (t is Building b) b.GetComp<CompSelectFuel>()?.ValidateFuelSettings(true);
                 }
             }
         }

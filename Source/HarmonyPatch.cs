@@ -115,7 +115,6 @@ namespace BurnItForFuel
                 }
                 int previousCount = curJob.count;
                 curJob.count = Mathf.CeilToInt(curJob.count / compSelectFuel.EquivalentFuelRatio(fuel));
-                Log.Message($"[BurnItForFuel] job.count successfully modified from {previousCount} to {curJob.count}");
             };
             return toil;
         }
@@ -132,7 +131,7 @@ namespace BurnItForFuel
                 if (compSelectFuel == null) return;
                 int previousCount = curJob.count;
                 curJob.count = Mathf.CeilToInt(curJob.count * compSelectFuel.EquivalentFuelRatio(compSelectFuel.lastEquivalentFuel));
-                Log.Message($"[BurnItForFuel] job.count successfully rectified back from {previousCount} to {curJob.count}");
+                //Log.Message($"[BurnItForFuel] job.count successfully rectified back from {previousCount} to {curJob.count}");
             };
             return toil;
         }
@@ -299,7 +298,6 @@ namespace BurnItForFuel
             {
                 return chosenThings;
             }
-            Log.Message($"Didn't find enough. accumulatedQuantity={accumulatedQuantity}, desiredQuantity{desiredQuantity.min}");
             return null;
 
             bool EntryCondition(Region from, Region r)
@@ -343,7 +341,6 @@ namespace BurnItForFuel
                 {
                     return false;
                 }
-                Log.Message($"[BurnItForFuel] Validator for {compSelectFuel.parent.Label} allows {compSelectFuel.FuelSettings.filter.allowedDefs.ToStringSafeEnumerable()}.");
                 if (!compSelectFuel.FuelSettings.filter.Allows(x))
                 {
                     return false;
