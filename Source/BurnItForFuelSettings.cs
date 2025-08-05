@@ -155,7 +155,7 @@ namespace BurnItForFuel
             subBox.CheckboxLabeled(useFlamm_label, ref useFlamm, useFlammToolTip);
             listing.EndSection(subBox);
             Text.Anchor = TextAnchor.UpperRight;
-            listing.SubLabel(zeroPotentialNotice, 1f);
+            listing.SubLabel(zeroPotentialNotice, 1);
             Text.Anchor = TextAnchor.UpperLeft;
             listing.Gap();
             listing.CheckboxLabeled(enableTargetFuelLevel_label, ref enableTargetFuelLevel, enableTargetFuelLevel_tt);

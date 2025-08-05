@@ -34,26 +34,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Languages", "Languages", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ChineseSimplified", "ChineseSimplified", "{8C0FC213-A06E-4DE1-BED6-BE5F62B447D2}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DefInjected", "DefInjected", "{0C9A059B-4CF9-47F9-AD3F-3A6CBDA8D530}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThingDef", "ThingDef", "{74D339D4-7705-4422-BDC2-B5C7C1FA0283}"
-	ProjectSection(SolutionItems) = preProject
-		Languages\ChineseSimplified\DefInjected\ThingDef\Things.xml = Languages\ChineseSimplified\DefInjected\ThingDef\Things.xml
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Keyed", "Keyed", "{9471219D-FA5F-4324-B315-F64A2D7B52F8}"
 	ProjectSection(SolutionItems) = preProject
 		Languages\ChineseSimplified\Keyed\BurnItForFuel_keys.xml = Languages\ChineseSimplified\Keyed\BurnItForFuel_keys.xml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ChineseTraditional", "ChineseTraditional", "{8A9753AC-E0D9-4AE4-A333-998ABEB5AED6}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DefInjected", "DefInjected", "{487E5DF4-3812-4FE9-98DE-413756E178A6}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ThingDef", "ThingDef", "{F149B4E8-8A88-42EE-AD34-8C777019FABF}"
-	ProjectSection(SolutionItems) = preProject
-		Languages\ChineseTraditional\DefInjected\ThingDef\Things.xml = Languages\ChineseTraditional\DefInjected\ThingDef\Things.xml
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Keyed", "Keyed", "{D04B9138-8174-4A7F-9CF7-B2729CAEA24C}"
 	ProjectSection(SolutionItems) = preProject
@@ -122,12 +108,8 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{8C0FC213-A06E-4DE1-BED6-BE5F62B447D2} = {7D359395-B8C5-4791-9350-58CF4B602665}
-		{0C9A059B-4CF9-47F9-AD3F-3A6CBDA8D530} = {8C0FC213-A06E-4DE1-BED6-BE5F62B447D2}
-		{74D339D4-7705-4422-BDC2-B5C7C1FA0283} = {0C9A059B-4CF9-47F9-AD3F-3A6CBDA8D530}
 		{9471219D-FA5F-4324-B315-F64A2D7B52F8} = {8C0FC213-A06E-4DE1-BED6-BE5F62B447D2}
 		{8A9753AC-E0D9-4AE4-A333-998ABEB5AED6} = {7D359395-B8C5-4791-9350-58CF4B602665}
-		{487E5DF4-3812-4FE9-98DE-413756E178A6} = {8A9753AC-E0D9-4AE4-A333-998ABEB5AED6}
-		{F149B4E8-8A88-42EE-AD34-8C777019FABF} = {487E5DF4-3812-4FE9-98DE-413756E178A6}
 		{D04B9138-8174-4A7F-9CF7-B2729CAEA24C} = {8A9753AC-E0D9-4AE4-A333-998ABEB5AED6}
 		{3D78350D-786B-47E3-AD77-2ECE49C6028A} = {7D359395-B8C5-4791-9350-58CF4B602665}
 		{56658164-E479-40C8-A105-B5D3E635D919} = {3D78350D-786B-47E3-AD77-2ECE49C6028A}

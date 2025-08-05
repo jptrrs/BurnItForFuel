@@ -16,9 +16,9 @@
   </modDependencies>
   <loadAfter/>
   <description>
-If you can burn wood for heat, why not use chemfuel as well? Or even cloth or other plants? This mod will enable you to select what type of fuel will be consumed by torches, campfires, stoves, smithies or any other fueled buildings - vanilla or modded - even passive coolers!
+If you can burn wood for heat, why not other plant matter? Or old wooden furniture? Or even cloth or chemfuel? This mod allows you to select what type of fuel will be consumed by torches, campfires, stoves, smithies or any other fueled buildings - vanilla or modded - even passive coolers! Resources you select as fuel will be weighted against the standard one to determine their refuelling power, taking both mass and flammability into consideration. 
 
-Fire icon by Michael Appleford from the Noun Project https://thenounproject.com/browse/icons/term/fire/" (CC BY 3.0)
+Fire icon by Michael Appleford from the Noun Project https://thenounproject.com/browse/icons/term/fire/ (CC BY 3.0)
   </description>
 	<url>https://steamcommunity.com/id/jptrrs/myworkshopfiles/?appid=294100</url> 
 </ModMetaData>

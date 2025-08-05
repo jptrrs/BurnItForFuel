@@ -8,12 +8,12 @@
   <UseMassToolTip>Itens com massa zero serão ignorados.</UseMassToolTip>
   <UseFlammLabel>Considerar flamabilidade</UseFlammLabel>
   <UseFlammToolTip>Itens não inflamáveis serão ignorados.</UseFlammToolTip>
-  <ZeroPotentialNotice>Recursos com potencial de combustão nulo não estão listados.</ZeroPotentialNotice>
+  <ZeroPotentialNotice>Recursos com potencial nulo não estão listados.</ZeroPotentialNotice>
   <EnableTargetFuelLevelLabel>Habilita a configuração de nível de combustível para todos os dispositivos que permitem seleção de combustíveis.</EnableTargetFuelLevelLabel>
   <EnableTargetFuelLevelToolTip>Com um seletor de nível do combustível podes escolher quanto combustível será mantido naquele dispositivo.</EnableTargetFuelLevelToolTip>
   <EnableWithNonFuelLabel>Habilita a seleção de combustíveis mesmo para dispositivos que utilizam recursos que não são combustíveis.</EnableWithNonFuelLabel>
   <EnableWithNonFuelToolTip>Isto afeta qualquer dispositivo que normalmente é abastecido por algo que NÃO está marcado ao lado.</EnableWithNonFuelToolTip>
-  <ShowFuelPotential>Mostrar potencial de combustão</ShowFuelPotential>
+  <ShowFuelPotential>Mostrar potencial</ShowFuelPotential>
   <ShowFuelPotentialToolTip>Valor de combustão por unidade quando comparado à {0}</ShowFuelPotentialToolTip>
   <MessageFuelSettingsSaved>Lista de combustíveis para {0} salva como predefinição.</MessageFuelSettingsSaved>
   <MessageFuelSettingsLoaded>Predefinição de combustíveis aplicada à {0}.</MessageFuelSettingsLoaded>
