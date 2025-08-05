@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
   <TabFuel>Combustível</TabFuel>
-<FuelSettingsNote>Escolha o que deve ser considerado combustível. Os itens selecionados aqui vão aparecer na guia de combustível de cada construção onde isto for relevante. Alí você poderá decidir o quê seus colonos vão de fato queimar naquele local.
-
-&lt;b&gt;Notas:&lt;/b&gt;
-&lt;b&gt;1.&lt;/b&gt; Desmarcar um recurso que é normalmente utilizado por uma construção (ex.: madeira para a fogueira) desativa o painel de combustível para aquela construção e ela vai voltar a usar apenas seu combustível original.
-&lt;b&gt;2.&lt;/b&gt; O Lançador de Cápsula ou qualquer outra construção que permita o ajuste do seu nível de combustível também ficam de fora.
-&lt;b&gt;3.&lt;/b&gt; As unidades de combustível são sempre as mesmas para qualquer recurso: 1 unidade = 1 combustível.
-</FuelSettingsNote>
+  <SelectFuels>O que é combustível?</SelectFuels>
+  <SelectFuelsToolTip>Escolha o que deve ser considerado combustível. Os itens selecionados aqui vão aparecer na guia de combustível de cada dispositivo onde isto for relevante. Alí você poderá decidir o quê seus colonos vão de fato queimar naquele local.\n\nDesmarcar um recurso que é normalmente utilizado por um dispositivo (ex.: madeira para a fogueira) desativa o painel de combustível para aquele dispositivo e ele volta a usar apenas seu combustível original.</SelectFuelsToolTip>
+  <FuelPotentialCalculation>Cálculo de equivalência de combustível:</FuelPotentialCalculation>
+  <UseMassLabel>Considerar massa</UseMassLabel>
+  <UseMassToolTip>Itens com massa zero serão ignorados.</UseMassToolTip>
+  <UseFlammLabel>Considerar inflamabilidade</UseFlammLabel>
+  <UseFlammToolTip>Itens não inflamáveis serão ignorados.</UseFlammToolTip>
+  <ZeroPotentialNotice>Recursos com potencial de combustão nulo não estão listados.</ZeroPotentialNotice>
+  <EnableTargetFuelLevelLabel>Habilita a configuração de nível de combustível para todos os dispositivos que permitem seleção de combustíveis.</EnableTargetFuelLevelLabel>
+  <EnableTargetFuelLevelToolTip>Com um seletor de nível do combustível você pode escolher quanto combustível será mantido naquele dispositivo.</EnableTargetFuelLevelToolTip>
+  <EnableWithNonFuelLabel>Habilita a seleção de combustíveis mesmo para dispositivos que utilizam recursos que não são combustíveis.</EnableWithNonFuelLabel>
+  <EnableWithNonFuelToolTip>Isto afeta qualquer dispositivo que normalmente é abastecido por algo que NÃO está marcado ao lado.</EnableWithNonFuelToolTip>
+  <ShowFuelPotential>Mostrar potencial de combustão</ShowFuelPotential>
+  <ShowFuelPotentialToolTip>Valor de combustão por unidade quando comparado à {0}</ShowFuelPotentialToolTip>
+  <MessageFuelSettingsSaved>Lista de combustíveis para {0} salva como predefinição.</MessageFuelSettingsSaved>
+  <MessageFuelSettingsLoaded>Predefinição de combustíveis aplicada à {0}.</MessageFuelSettingsLoaded>
 </LanguageData>

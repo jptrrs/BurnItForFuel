@@ -1,16 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
-  <TabFuel>Fuel</TabFuel>
-  <FuelSettingsNote>Select what should be considered fuel. Items selected here will appear on the fuel tab of every relevant building. From there you can decide what your colonists will actually bring to be burned in.
-
-&lt;b&gt;Notes:&lt;/b&gt;
-&lt;b&gt;1.&lt;/b&gt; Please reload your game for the changes to have full effect.
-&lt;b&gt;2.&lt;/b&gt; Deselecting any resource normally used by a building (&lt;i&gt;e.g.&lt;/i&gt; wood logs for the campfire) will disable that building's fuel tab, and it will revert to using only their original fuel.
-&lt;b&gt;3.&lt;/b&gt; The Pod Laucher and any other building that allows for fuel level adjustment are also excluded.
-&lt;b&gt;4.&lt;/b&gt; Fuel units are always the same for any resource: 1 unit = 1 fuel.
-</FuelSettingsNote>
-  
-  <!--NEW-->
+  <TabFuel>Fuel</TabFuel> 
   <SelectFuels>What should be fuel?</SelectFuels>
   <SelectFuelsToolTip>Select what should be considered fuel. Items selected here will appear on the fuel tab of every relevant building. From there you can decide what your colonists will actually bring to be burned in.\n\nDeselecting any resource normally used by a building (&lt;i&gt;e.g.&lt;/i&gt; wood logs for the campfire) will disable that building's fuel tab, and it will revert to using only their original fuel.</SelectFuelsToolTip>
   <FuelPotentialCalculation>Fuel equivalence calculation:</FuelPotentialCalculation>
@@ -20,12 +10,11 @@
   <UseFlammToolTip>Non-flammable items will be ignored.</UseFlammToolTip>
   <ZeroPotentialNotice>Resources with zero fuel potential are not listed.</ZeroPotentialNotice>
   <EnableTargetFuelLevelLabel>Enable configurable target fuel level for all objects using fuel selection</EnableTargetFuelLevelLabel>
-  <EnableTargetFuelLevelToolTip>With a configurable target fuel level, you can select how much fuel should be maintained in that building.</EnableTargetFuelLevelToolTip>
+  <EnableTargetFuelLevelToolTip>With a configurable target fuel level you can select how much fuel should be maintained in that building.</EnableTargetFuelLevelToolTip>
   <EnableWithNonFuelLabel>Enable fuel selection even for fueled objects which rely on non-fuel resources</EnableWithNonFuelLabel>
   <EnableWithNonFuelToolTip>This affects anything that is normally fueled by something NOT selected here.</EnableWithNonFuelToolTip>
   <ShowFuelPotential>Show fuel potential</ShowFuelPotential>
   <ShowFuelPotentialToolTip>Fuel value per unit when compared to {0}</ShowFuelPotentialToolTip>
   <MessageFuelSettingsSaved>Current fuel choices for {0} saved as a preset.</MessageFuelSettingsSaved>
   <MessageFuelSettingsLoaded>Preset fuel choices applied to {0}.</MessageFuelSettingsLoaded>
-    
 </LanguageData>
