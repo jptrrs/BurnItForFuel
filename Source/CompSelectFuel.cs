@@ -95,7 +95,7 @@ namespace BurnItForFuel
                     siblingComp = parent.TryGetComp<CompRefuelable>();
                     if (siblingComp == null)
                     {
-                        Log.Error($"[BurnItForFuel] {parent.LabelCap} has a CompSelectFuel but no CompRefuelable!");
+                        Log.Warning($"[BurnItForFuel] {parent.LabelCap} has a CompSelectFuel but no CompRefuelable!");
                     }
                 }
                 return siblingComp;
@@ -180,6 +180,7 @@ namespace BurnItForFuel
         public override void Initialize(CompProperties props)
         {
             base.Initialize(props);
+            if (SiblingComp == null) return;
             if (Scribe.mode != LoadSaveMode.PostLoadInit) SetUpFuelSettings();
             SetUpFuelConfiguration();
         }
@@ -274,7 +275,6 @@ namespace BurnItForFuel
 
         public void SetUpFuelConfiguration()
         {
-            if (SiblingComp == null) return;
             var props = SiblingComp.Props;
             var defaults = parent.def.GetCompProperties<CompProperties_Refuelable>();
 
