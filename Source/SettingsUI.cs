@@ -8,10 +8,11 @@ namespace BurnItForFuel
     public static class SettingsUI
     {
         public static float buttonHeight = 24f;
+        private static ThingFilterUI.UIState fuelFilterState = new ThingFilterUI.UIState();
 
         static BurnItForFuelSettings settings => BurnItForFuelMod.settings;
 
-        public static void Draw(Rect rect)
+        public static void DrawSettings(Rect rect)
         {
             //text
             string fuels_label = "SelectFuels".Translate();
@@ -56,7 +57,7 @@ namespace BurnItForFuel
 
             //action!
             Widgets.Label(colA_header, ref num, fuels_label, new TipSignal(fuels_tt));
-            ThingFilterUI.DoThingFilterConfigWindow(ColA_body, new ThingFilterUI.UIState(), settings.masterFuelSettings, settings.PossibleFuels, 1, null, DefDatabase<SpecialThingFilterDef>.AllDefs, true, true);
+            ThingFilterUI.DoThingFilterConfigWindow(ColA_body, fuelFilterState, settings.masterFuelSettings, settings.PossibleFuels, 1, null, DefDatabase<SpecialThingFilterDef>.AllDefs, true, true);
             Widgets.Label(colB_header, calculation_label);
             Listing_Standard listing = new Listing_Standard();
             listing.Begin(colB_body);

@@ -21,7 +21,7 @@ namespace BurnItForFuel
                 ThingFilterCentral.NotifyFuelFilterOpen(this, true);
                 settingsWindowOpened = true;
             }
-            SettingsUI.Draw(Rect);
+            SettingsUI.DrawSettings(Rect);
             base.DoSettingsWindowContents(Rect);
         }
 
