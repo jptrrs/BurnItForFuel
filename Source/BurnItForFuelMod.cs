@@ -18,23 +18,23 @@ namespace BurnItForFuel
         {
             if (!settingsWindowOpened)
             {
-                ThingFilterExtras.NotifyFuelFilterOpen(this, true);
+                ThingFilterCentral.NotifyFuelFilterOpen(this, true);
                 settingsWindowOpened = true;
             }
-            settings.Draw(Rect);
+            SettingsUI.Draw(Rect);
             base.DoSettingsWindowContents(Rect);
         }
 
         public override string SettingsCategory()
         {
-            return "Burn It For Fuel";
+            return "Burn It For Fuel 2";
         }
 
         public override void WriteSettings()
         {
             base.WriteSettings();
             settingsWindowOpened = false;
-            ThingFilterExtras.NotifyFuelFilterOpen(this, false);
+            ThingFilterCentral.NotifyFuelFilterOpen(this, false);
         }
     }
 }

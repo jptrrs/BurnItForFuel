@@ -40,7 +40,7 @@ namespace BurnItForFuel
         public override void OnOpen()
         {
             lastSelObject = SelObject;
-            ThingFilterExtras.NotifyFuelFilterOpen(this, true);
+            ThingFilterCentral.NotifyFuelFilterOpen(this, true);
             base.OnOpen();
         }
 
@@ -49,7 +49,7 @@ namespace BurnItForFuel
             if (SelObject != lastSelObject)
             {
                 lastSelObject = SelObject;
-                ThingFilterExtras.NotifyFuelFilterOpen(this, true);
+                ThingFilterCentral.NotifyFuelFilterOpen(this, true);
             }
             base.ExtraOnGUI();
         }
@@ -58,12 +58,12 @@ namespace BurnItForFuel
         {
             base.CloseTab();
             lastSelObject = null;
-            ThingFilterExtras.NotifyFuelFilterOpen(this, false);
+            ThingFilterCentral.NotifyFuelFilterOpen(this, false);
         }
 
         public override void Notify_ClickOutsideWindow()
         {
-            ThingFilterExtras.NotifyFuelFilterOpen(this, false);
+            ThingFilterCentral.NotifyFuelFilterOpen(this, false);
             base.Notify_ClickOutsideWindow();
         }
     }

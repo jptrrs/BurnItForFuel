@@ -2,16 +2,16 @@
 using RimWorld;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
 using Verse;
 using Verse.AI;
-using static System.Xml.Schema.FacetsChecker.FacetsCompiler;
 
 namespace BurnItForFuel
 {
+    using static SettingsUI;
+
     [StaticConstructorOnStartup]
     public static class HarmonyPatches
     {
@@ -60,7 +60,7 @@ namespace BurnItForFuel
                 new HarmonyMethod(patchType, nameof(DoThingDef_Prefix)), new HarmonyMethod(patchType, nameof(DoThingDef_Postfix)), new HarmonyMethod(patchType, nameof(DoThingDef_Transpiler)));
             harmonyInstance.Patch(AccessTools.Method(typeof(Listing_Tree), nameof(Listing_Tree.LabelLeft)),
                 new HarmonyMethod(patchType, nameof(LabelLeft_Prefix)));
-            ThingFilterExtras.FuelFilterOpen += FuelFilterWindowOpened; // register with an event
+            ThingFilterCentral.FuelFilterOpen += FuelFilterWindowOpened; // register with an event
         }
 
         //Event handler that reacts to the opening of a Fuel Filter window.
@@ -166,7 +166,7 @@ namespace BurnItForFuel
             if (TTFilterLabelThingDef == null || (!TTFilterOnTab && !Settings.showFuelPotential)) return;
             var ratio = FuelTab?.SelFuelComp?.EquivalentFuelRatio(TTFilterLabelThingDef) ?? TTFilterLabelThingDef.AbsoluteFuelRatio();
             if (ratio == 0f) return;
-            widthOffset = ThingFilterExtras.InsertFuelPowerTag(__instance, widthOffset, ratio);
+            widthOffset = InsertFuelPowerTag(__instance, widthOffset, ratio);
         }
 
         private static bool GetFuelCountToFullyRefuel_Prefix(CompRefuelable __instance, ref int __result)
@@ -221,7 +221,7 @@ namespace BurnItForFuel
         {   
             if (TTFilterWindowBorder == null) TTFilterWindowBorder = original;
             float result = original;
-            if (TTFilterExtrasAllowed) result += ThingFilterExtras.buttonHeight;
+            if (TTFilterExtrasAllowed) result += buttonHeight;
             return result;
         }
 
@@ -235,8 +235,8 @@ namespace BurnItForFuel
         {
             if (!TTFilterExtrasAllowed) return; //Acts only if called for.
             float padding = TTFilterWindowBorder.value / 2;
-            Rect footbar = new Rect(rect.x + padding, rect.yMax + padding, rect.width - TTFilterWindowBorder.value, ThingFilterExtras.buttonHeight);
-            ThingFilterExtras.TTFilterExtraButtons(footbar, FuelTab?.SelFuelComp);
+            Rect footbar = new Rect(rect.x + padding, rect.yMax + padding, rect.width - TTFilterWindowBorder.value, buttonHeight);
+            TTFilterExtraButtons(footbar, FuelTab?.SelFuelComp);
             if (TTFilterOnSettings && Settings.FuelPotentialValuesState != __state) SelectFuelHelper.ResetFuelValueCache(); //Calls for the fuel values updating if needed & we're on the main settings window.
         }
 
