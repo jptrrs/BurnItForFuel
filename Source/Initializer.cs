@@ -43,15 +43,11 @@ namespace BurnItForFuel
         {
             foreach (var def in DefDatabase<ThingDef>.AllDefs.Where(x => x.HasComp(typeof(CompRefuelable))))
             {
-                //Doesn't really work.
-                //if (def.passability == Traversability.Impassable && def.hasInteractionCell == false)
-                //{
-                //    Log.Message($"[BurnItForFuel] Prevented adding fuel selection capability to {def.LabelCap} because it's both impassable and has no interaction cell.");
-                //    continue;
-                //}
                 def.comps.Add(new CompProperties_SelectFuel());
                 if (def.inspectorTabs == null) def.inspectorTabs = new List<Type>();
                 def.inspectorTabs.Add(typeof(ITab_Fuel));
+                if (def.inspectorTabsResolved == null) def.inspectorTabsResolved = new List<InspectTabBase>();
+                def.inspectorTabsResolved.Add(InspectTabManager.GetSharedInstance(typeof(ITab_Fuel)));
             }
         }
     }
