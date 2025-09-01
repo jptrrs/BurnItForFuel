@@ -106,7 +106,7 @@ namespace BurnItForFuel
 
         private static BurnItForFuelSettings settings => BurnItForFuelMod.settings;
 
-        private bool ClearedForFuelSelection => settings.enableWithNonFuel || FuelSettingsIncludeBaseFuel;
+        public bool ClearedForFuelSelection => settings.enableWithNonFuel || FuelSettingsIncludeBaseFuel;
 
         private ThingFilter UserFuelSettings
         {

@@ -11,6 +11,7 @@ using Verse.AI;
 namespace BurnItForFuel
 {
     using static SettingsUI;
+    using static System.Data.SqlClient.SqlConnectionString;
 
     [StaticConstructorOnStartup]
     public static class HarmonyPatches
@@ -47,11 +48,20 @@ namespace BurnItForFuel
             harmonyInstance.Patch(AccessTools.Method(typeof(JobDriver_RefuelAtomic), nameof(JobDriver_RefuelAtomic.MakeNewToils)),
                 null, new HarmonyMethod(patchType, nameof(MakeNewToils_Postfix)), null);
 
-            //Teaching the tree filter thingy to behave when employed on the mod settings panel outside of a running game. 
-            harmonyInstance.Patch(AccessTools.Method(typeof(Listing_TreeThingFilter), nameof(Listing_TreeThingFilter.DoCategoryChildren)),
-                null, null, new HarmonyMethod(patchType, nameof(HiddenItemsManager_Transpiler)));
-            harmonyInstance.Patch(AccessTools.Method(typeof(QuickSearchFilter), nameof(QuickSearchFilter.Matches), new Type[] {typeof(ThingDef)}),
-                null, null, new HarmonyMethod(patchType, nameof(HiddenItemsManager_Transpiler)));
+            //Teaching the tree filter thingy to behave when employed on the mod settings panel outside of a running game.
+            if (LoadedModManager.RunningModsListForReading.Any(x => x.PackageIdPlayerFacing.StartsWith("defaults.1trickPwnyta")))
+            {
+                Log.Message("[OpenTheWindows] 1trickPwnyta's Defaults detected! Adapting...");
+                harmonyInstance.Patch(AccessTools.Method("Defaults.PatchUtility_HiddenItemsManager:ThingIsHidden"),
+                    new HarmonyMethod(patchType, nameof(Defaults_ThingIsHidden_Prefix)));
+            }
+            else
+            {
+                harmonyInstance.Patch(AccessTools.Method(typeof(Listing_TreeThingFilter), nameof(Listing_TreeThingFilter.DoCategoryChildren)),
+                    null, null, new HarmonyMethod(patchType, nameof(HiddenItemsManager_Transpiler)));
+                harmonyInstance.Patch(AccessTools.Method(typeof(QuickSearchFilter), nameof(QuickSearchFilter.Matches), new Type[] {typeof(ThingDef)}),
+                    null, null, new HarmonyMethod(patchType, nameof(HiddenItemsManager_Transpiler)));
+            }
 
             //Inserting extra buttons and a fuel power indicator to the Thing Filter config window.
             harmonyInstance.Patch(AccessTools.Method(typeof(ThingFilterUI), nameof(ThingFilterUI.DoThingFilterConfigWindow)),
@@ -183,7 +193,7 @@ namespace BurnItForFuel
         private static bool Refuel_Prefix(CompRefuelable __instance, List<Thing> fuelThings)
         {
             CompSelectFuel compSelectFuel = __instance.parent.TryGetComp<CompSelectFuel>();
-            if (compSelectFuel != null)
+            if (compSelectFuel != null && compSelectFuel.ClearedForFuelSelection)
             {
                 compSelectFuel.Refuel(fuelThings);
                 return false;
@@ -203,7 +213,13 @@ namespace BurnItForFuel
 
         public static bool HiddenItemsManager_Bypass(ThingDef t)
         {
-            return Current.ProgramState == ProgramState.Playing ? Find.HiddenItemsManager.Hidden(t) : false;
+            return Current.ProgramState == ProgramState.Playing && Find.HiddenItemsManager.Hidden(t);
+        }
+
+        private static bool Defaults_ThingIsHidden_Prefix(ThingDef def, ref bool __result)
+        {
+            __result = HiddenItemsManager_Bypass(def);
+            return false;
         }
 
         //Insterts a call to MakeRoomForFootButtons() before the Rect.yMax assignment in DoThingFilterConfigWindow.
@@ -362,6 +378,5 @@ namespace BurnItForFuel
 
             return codeMatcher.Instructions();
         }
-
     }
 }
