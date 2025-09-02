@@ -51,7 +51,7 @@ namespace BurnItForFuel
             //Teaching the tree filter thingy to behave when employed on the mod settings panel outside of a running game.
             if (LoadedModManager.RunningModsListForReading.Any(x => x.PackageIdPlayerFacing.StartsWith("defaults.1trickPwnyta")))
             {
-                Log.Message("[OpenTheWindows] 1trickPwnyta's Defaults detected! Adapting...");
+                Log.Message("[BurnItForFuel] 1trickPwnyta's Defaults detected! Adapting...");
                 harmonyInstance.Patch(AccessTools.Method("Defaults.PatchUtility_HiddenItemsManager:ThingIsHidden"),
                     new HarmonyMethod(patchType, nameof(Defaults_ThingIsHidden_Prefix)));
             }
@@ -70,6 +70,13 @@ namespace BurnItForFuel
                 new HarmonyMethod(patchType, nameof(DoThingDef_Prefix)), new HarmonyMethod(patchType, nameof(DoThingDef_Postfix)), new HarmonyMethod(patchType, nameof(DoThingDef_Transpiler)));
             harmonyInstance.Patch(AccessTools.Method(typeof(Listing_Tree), nameof(Listing_Tree.LabelLeft)),
                 new HarmonyMethod(patchType, nameof(LabelLeft_Prefix)));
+
+            //Setting up the main settings panel to announce itself. 
+            harmonyInstance.Patch(AccessTools.Constructor(typeof(Dialog_ModSettings), new Type[] {typeof(Mod)}),
+                null, new HarmonyMethod(patchType, nameof(DialogModSettings_Constructor_Postfix)));
+            harmonyInstance.Patch(AccessTools.Method(typeof(Dialog_ModSettings), nameof(Dialog_ModSettings.PreClose)),
+                null, new HarmonyMethod(patchType, nameof(PreClose_Postfix)));
+
             ThingFilterCentral.FuelFilterOpen += FuelFilterWindowOpened; // register with an event
         }
 
@@ -79,12 +86,14 @@ namespace BurnItForFuel
             bool fromTab = false;
             if (sender is ITab_Fuel tab)
             {
-                FuelTab = tab; //If necessary, will be cleared later on DoThingFilterConfigWindow_Prefix. This prevents an open tab from glitching if unfocused but still open. 
+                //If necessary, will be cleared later on DoThingFilterConfigWindow_Prefix. This prevents an open tab from glitching if unfocused but still open. 
+                FuelTab = tab; 
                 fromTab = true;
             }
             else FuelTab = null;
             TTFilterWindowFlag = open;
-            if (!fromTab && open && Current.ProgramState == ProgramState.Playing) //This frees us from having to draw different sets of extra buttons for different panels.
+            //This frees us from having to draw different sets of extra buttons for different panels.
+            if (!fromTab && open && Current.ProgramState == ProgramState.Playing) 
             {
                 Find.WindowStack.WindowOfType<MainTabWindow_Inspect>()?.CloseOpenTab();
             }
@@ -141,7 +150,6 @@ namespace BurnItForFuel
                 if (compSelectFuel == null) return;
                 int previousCount = curJob.count;
                 curJob.count = Mathf.CeilToInt(curJob.count * compSelectFuel.EquivalentFuelRatio(compSelectFuel.lastEquivalentFuel));
-                //Log.Message($"[BurnItForFuel] job.count successfully rectified back from {previousCount} to {curJob.count}");
             };
             return toil;
         }
@@ -177,6 +185,22 @@ namespace BurnItForFuel
             var ratio = FuelTab?.SelFuelComp?.EquivalentFuelRatio(TTFilterLabelThingDef) ?? TTFilterLabelThingDef.AbsoluteFuelRatio();
             if (ratio == 0f) return;
             widthOffset = InsertFuelPowerTag(__instance, widthOffset, ratio);
+        }
+
+        public static void PreClose_Postfix(Mod ___mod)
+        {
+            if (___mod is BurnItForFuelMod mod)
+            {
+                ThingFilterCentral.NotifyFuelFilterOpen(mod, false);
+            }
+        }
+
+        public static void DialogModSettings_Constructor_Postfix(Mod ___mod)
+        {
+            if (___mod is BurnItForFuelMod mod)
+            {
+                ThingFilterCentral.NotifyFuelFilterOpen(mod, true);
+            }
         }
 
         private static bool GetFuelCountToFullyRefuel_Prefix(CompRefuelable __instance, ref int __result)
